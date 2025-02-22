@@ -33,8 +33,6 @@ async fn main() {
             mouse_pressed = false;
         }
         if mouse_pressed {
-            println!("previous hrot, vrot: {} {}", hrot, vrot);
-
             let d_mouse = mouse_delta_position();
 
             hrot += d_mouse.x * CAM_SPEED;
@@ -43,8 +41,6 @@ async fn main() {
                 vec3(hrot.cos() * vrot.cos(), vrot.sin(), hrot.sin() * vrot.cos()).normalize();
             u_right = u_front.cross(up).normalize();
             u_up = u_right.cross(u_front).normalize();
-
-            println!("new hrot, vrot: {} {}", hrot, vrot);
         }
 
         // non-event calls go here:
@@ -57,9 +53,11 @@ async fn main() {
             ..Default::default()
         });
 
-        draw_cube_wires(vec3(0., 1., -6.), vec3(2., 2., 2.), GREEN);
-        draw_cube_wires(vec3(0., 1., 6.), vec3(2., 2., 2.), BLUE);
-        draw_cube_wires(vec3(2., 1., 2.), vec3(2., 2., 2.), RED);
+        draw_cube_wires(vec3(-4., 1., 0.), vec3(2., 2., 2.), GREEN);
+        draw_cube_wires(vec3(0., 1., 4.), vec3(2., 2., 2.), BLUE);
+        draw_cube_wires(vec3(4., 1., 0.), vec3(2., 2., 2.), RED);
+        draw_cube_wires(vec3(0., 4., 0.), vec3(2., 2., 2.), YELLOW);
+        draw_cube_wires(vec3(0., 1., -4.), vec3(2., 2., 2.), ORANGE);
 
         set_default_camera();
         draw_text(
