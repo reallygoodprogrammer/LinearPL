@@ -8,3 +8,8 @@ target/
 
 # some other fun files
 .DS_Store
+
+
+# Added by cargo
+
+/target

@@ -1,0 +1,8 @@
+[package]
+name = "tdpl"
+version = "0.1.0"
+edition = "2021"
+description = "3D Particles Lib for use with Macroquad"
+
+[dependencies]
+macroquad = "0.4.13"
