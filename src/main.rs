@@ -1,4 +1,10 @@
+//! # TDPL Example
+//!
+//! Crate for creating static_part1icle based effects along with
+//! the macroquad rust crate.
+
 use macroquad::prelude::*;
+use tdpl::particle::Particle;
 
 const CAM_SPEED: f32 = 0.8;
 
@@ -20,6 +26,11 @@ async fn main() {
 
     // mouse is pressed flag
     let mut mouse_pressed = false;
+
+    // some particles
+    let static_part1 = Particle::new((-0.2, 1., 4.), (0., 1., 1., 1.), 0.01);
+    let static_part2 = Particle::new((0., 1., 4.), (0., 1., 0., 1.), 0.01);
+    let static_part3 = Particle::new((0.2, 1., 4.), (1., 0., 0., 1.), 0.01);
 
     loop {
         if is_key_pressed(KeyCode::Escape) {
@@ -52,6 +63,11 @@ async fn main() {
             target: u_pos + u_front,
             ..Default::default()
         });
+
+        // draw static particles
+        static_part1.draw();
+        static_part2.draw();
+        static_part3.draw();
 
         draw_cube_wires(vec3(-4., 1., 0.), vec3(2., 2., 2.), GREEN);
         draw_cube_wires(vec3(0., 1., 4.), vec3(2., 2., 2.), BLUE);

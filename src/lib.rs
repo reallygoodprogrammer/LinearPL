@@ -1,19 +1,10 @@
 //! # TDPL
 //!
-//! Crate for creating particle based effects along with
-//! the macroquad rust crate.
+//! Library for creating particle based effects alongside
+//! the macroquad graphics library for rust.
 
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+pub mod particle;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
+pub mod linear_particles;
+pub mod planar_particles;
+pub mod spatial_particles;
