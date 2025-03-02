@@ -28,9 +28,9 @@ async fn main() {
     let mut mouse_pressed = false;
 
     // some particles
-    let static_part1 = Particle::new((-0.2, 1., 4.), (0., 1., 1., 1.), 0.01);
-    let static_part2 = Particle::new((0., 1., 4.), (0., 1., 0., 1.), 0.01);
-    let static_part3 = Particle::new((0.2, 1., 4.), (1., 0., 0., 1.), 0.01);
+    let mut static_part1 = Particle::new((-0.2, 1., 4.), (0., 1., 1., 1.), 0.01, 1.);
+    let mut static_part2 = Particle::new((0., 1., 4.), (0., 1., 0., 1.), 0.01, 1.);
+    let mut static_part3 = Particle::new((0.2, 1., 4.), (1., 0., 0., 1.), 0.01, 1.);
 
     loop {
         if is_key_pressed(KeyCode::Escape) {
@@ -64,10 +64,14 @@ async fn main() {
             ..Default::default()
         });
 
-        // draw static particles
+        // draw static particles, reset their clock
         static_part1.draw();
         static_part2.draw();
         static_part3.draw();
+
+        static_part1.reset();
+        static_part2.reset();
+        static_part3.reset();
 
         draw_cube_wires(vec3(-4., 1., 0.), vec3(2., 2., 2.), GREEN);
         draw_cube_wires(vec3(0., 1., 4.), vec3(2., 2., 2.), BLUE);
