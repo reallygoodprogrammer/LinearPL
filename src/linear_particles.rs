@@ -26,6 +26,7 @@ pub struct LinearParticles {
     colors: Vec<Color>,
     sizes: Vec<f32>,
     period: f32,
+    decay: f32,
     initialized: bool,
     looping: bool,
     active: bool,
@@ -46,6 +47,7 @@ impl LinearParticles {
             colors: Vec::new(),
             sizes: Vec::new(),
             period: 0.,
+            decay: 0.2,
             initialized: false,
             looping: false,
             active: false,
@@ -66,6 +68,21 @@ impl LinearParticles {
                 Ok(())
             }
             _ => Err("value error: period should be positive value\n"),
+        }
+    }
+
+    /// Set the decay (Particle length) of the LinearParticle's graphic.
+    ///
+    /// # Arguments:
+    ///
+    /// - d: `f32` total length of the particles generation.
+    pub fn set_decay(&mut self, d: f32) -> Result<(), &str> {
+        match d {
+            d if d > 0. => {
+                self.decay = d;
+                Ok(())
+            }
+            _ => Err("value error: decay should be positive value\n"),
         }
     }
 
@@ -223,9 +240,6 @@ impl LinearParticles {
         chance > self.rand_generator.random_range(0.0..1.0)
     }
 
-    // I would like to be able to use this with generic slice T for values,
-    // that way I can use the color vector with this function as well. For that
-    // I would also need to impl Add<Color>, Mul<f32> traits for Color.
     fn map_float_value(&self, values: &[f32], elapsed: f32) -> Result<f32, &str> {
         let ratio = values.len() as f32 / elapsed;
         let low = (elapsed * ratio).floor() as usize;
@@ -247,6 +261,40 @@ impl LinearParticles {
                 None => Err("unexpected error in map_float_value indexing!"),
             }
         }
+    }
+
+    fn map_color_value(&self, values: &[Color], elapsed: f32) -> Result<[f32; 4], &str> {
+        let ratio = values.len() as f32 / elapsed;
+        let low = (elapsed * ratio).floor() as usize;
+        let high = (elapsed * ratio).ceil() as usize;
+
+        let first_value = match values.get(low) {
+            Some(val) => val,
+            None => {
+                return Err("unexpected error in map_Color_value indexing!");
+            }
+        };
+
+        if low == high {
+            Ok([(*first_value).r, (*first_value).g, (*first_value).b, (*first_value).a])
+        } else {
+            let val_ratio = elapsed - (low as f32);
+            match values.get(high) {
+                Some(val) => Ok([
+                    (first_value.r * val_ratio) + (val.r * (1.0 - val_ratio)),
+                    (first_value.g * val_ratio) + (val.g * (1.0 - val_ratio)),
+                    (first_value.b * val_ratio) + (val.b * (1.0 - val_ratio)),
+                    (first_value.a * val_ratio) + (val.a * (1.0 - val_ratio)),
+                ]),
+                None => Err("unexpected error in map_Color_value indexing!"),
+            }
+        }
+    }
+
+    fn map_location(&self, elapsed: f32) -> Result<[f32; 3], &str> {
+        let ratio = self.map_float_value(&self.locations, elapsed)?;
+        let vratio = Vec3::new(ratio, ratio, ratio);
+        Ok(((self.start_location * vratio) + ((Vec3::ONE - vratio) * self.end_location)).into())
     }
 }
 

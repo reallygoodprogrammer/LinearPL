@@ -28,7 +28,7 @@ pub struct Particle {
 
 impl Particle {
     /// Instantiate a new Particle at `(x, y, z)` location
-    /// with `(r, g, b, a)` color and `s` size.
+    /// with `(r, g, b, a)` color and `s` size, length `l`.
     pub fn new(
         (x, y, z): (f32, f32, f32),
         (r, g, b, a): (f32, f32, f32, f32),
