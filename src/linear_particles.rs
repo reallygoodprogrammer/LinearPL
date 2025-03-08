@@ -206,6 +206,10 @@ impl LinearParticles {
         self.initialized = false;
     }
 
+    fn should_generate(&mut self, chance: f32) -> bool {
+        chance > self.rand_generator.random_range(0.0..1.0)
+    }
+
     /// Display the next frame available from the LinearParticle
     /// system defined by users previous called settings.
     ///
@@ -213,16 +217,24 @@ impl LinearParticles {
     ///
     /// - `true` if LinearParticle is still 'active' in next frame,
     /// - `false` otherwise
-    pub fn next_frame(&mut self) -> bool {
+    pub fn next_frame(&mut self) -> Result<bool, &'static str> {
         let current_time = self.start_time.elapsed().as_secs_f32();
 
-        /*
-        if self.should_generate(self.map_float_value(self.densities, current_time)) {
-            // particle generation here
+        let gen_flag = map_float_value(&self.densities, current_time)?;
+        if self.should_generate(gen_flag) {
+            let p = Particle::new(
+                map_location(
+                    &self.locations,
+                    self.start_location,
+                    self.end_location,
+                    current_time,
+                )?,
+                map_color_value(&self.colors, current_time)?,
+                map_float_value(&self.sizes, current_time)?,
+                self.decay,
+            );
+            self.particles.push(p);
         }
-
-        // particle drawing here
-        */
 
         if self.start_time.elapsed().as_secs_f32() > self.period {
             if self.looping {
@@ -230,71 +242,10 @@ impl LinearParticles {
             } else {
                 self.tear_down();
             }
-            false
+            Ok(false)
         } else {
-            true
+            Ok(true)
         }
-    }
-
-    fn should_generate(&mut self, chance: f32) -> bool {
-        chance > self.rand_generator.random_range(0.0..1.0)
-    }
-
-    fn map_float_value(&self, values: &[f32], elapsed: f32) -> Result<f32, &str> {
-        let ratio = values.len() as f32 / elapsed;
-        let low = (elapsed * ratio).floor() as usize;
-        let high = (elapsed * ratio).ceil() as usize;
-
-        let first_value = match values.get(low) {
-            Some(val) => val,
-            None => {
-                return Err("unexpected error in map_float_value indexing!");
-            }
-        };
-
-        if low == high {
-            Ok(*first_value)
-        } else {
-            let val_ratio = elapsed - (low as f32);
-            match values.get(high) {
-                Some(val) => Ok((first_value * val_ratio) + (val * (1.0 - val_ratio))),
-                None => Err("unexpected error in map_float_value indexing!"),
-            }
-        }
-    }
-
-    fn map_color_value(&self, values: &[Color], elapsed: f32) -> Result<[f32; 4], &str> {
-        let ratio = values.len() as f32 / elapsed;
-        let low = (elapsed * ratio).floor() as usize;
-        let high = (elapsed * ratio).ceil() as usize;
-
-        let first_value = match values.get(low) {
-            Some(val) => val,
-            None => {
-                return Err("unexpected error in map_Color_value indexing!");
-            }
-        };
-
-        if low == high {
-            Ok([(*first_value).r, (*first_value).g, (*first_value).b, (*first_value).a])
-        } else {
-            let val_ratio = elapsed - (low as f32);
-            match values.get(high) {
-                Some(val) => Ok([
-                    (first_value.r * val_ratio) + (val.r * (1.0 - val_ratio)),
-                    (first_value.g * val_ratio) + (val.g * (1.0 - val_ratio)),
-                    (first_value.b * val_ratio) + (val.b * (1.0 - val_ratio)),
-                    (first_value.a * val_ratio) + (val.a * (1.0 - val_ratio)),
-                ]),
-                None => Err("unexpected error in map_Color_value indexing!"),
-            }
-        }
-    }
-
-    fn map_location(&self, elapsed: f32) -> Result<[f32; 3], &str> {
-        let ratio = self.map_float_value(&self.locations, elapsed)?;
-        let vratio = Vec3::new(ratio, ratio, ratio);
-        Ok(((self.start_location * vratio) + ((Vec3::ONE - vratio) * self.end_location)).into())
     }
 }
 
@@ -302,4 +253,68 @@ impl Default for LinearParticles {
     fn default() -> Self {
         LinearParticles::new(Vec3::new(0., 0., 0.), Vec3::new(0., 0., 0.))
     }
+}
+
+// these are some helper functions for scaling different types of values
+//
+fn map_float_value(values: &[f32], elapsed: f32) -> Result<f32, &'static str> {
+    let ratio = values.len() as f32 / elapsed;
+    let low = (elapsed * ratio).floor() as usize;
+    let high = (elapsed * ratio).ceil() as usize;
+
+    let first_value = match values.get(low) {
+        Some(val) => val,
+        None => {
+            return Err("unexpected error in map_float_value indexing!");
+        }
+    };
+
+    if low == high {
+        Ok(*first_value)
+    } else {
+        let val_ratio = elapsed - (low as f32);
+        match values.get(high) {
+            Some(val) => Ok((first_value * val_ratio) + (val * (1.0 - val_ratio))),
+            None => Err("unexpected error in map_float_value indexing!"),
+        }
+    }
+}
+
+fn map_color_value(colors: &[Color], elapsed: f32) -> Result<(f32, f32, f32, f32), &'static str> {
+    let ratio = colors.len() as f32 / elapsed;
+    let low = (elapsed * ratio).floor() as usize;
+    let high = (elapsed * ratio).ceil() as usize;
+
+    let first_value = match colors.get(low) {
+        Some(val) => val,
+        None => {
+            return Err("unexpected error in map_Color_value indexing!");
+        }
+    };
+
+    if low == high {
+        Ok((first_value.r, first_value.g, first_value.b, first_value.a))
+    } else {
+        let val_ratio = elapsed - (low as f32);
+        match colors.get(high) {
+            Some(val) => Ok((
+                (first_value.r * val_ratio) + (val.r * (1.0 - val_ratio)),
+                (first_value.g * val_ratio) + (val.g * (1.0 - val_ratio)),
+                (first_value.b * val_ratio) + (val.b * (1.0 - val_ratio)),
+                (first_value.a * val_ratio) + (val.a * (1.0 - val_ratio)),
+            )),
+            None => Err("unexpected error in map_Color_value indexing!"),
+        }
+    }
+}
+
+fn map_location(
+    locations: &[f32],
+    start_location: Vec3,
+    end_location: Vec3,
+    elapsed: f32,
+) -> Result<(f32, f32, f32), &'static str> {
+    let ratio = map_float_value(locations, elapsed)?;
+    let vratio = Vec3::new(ratio, ratio, ratio);
+    Ok(((start_location * vratio) + ((Vec3::ONE - vratio) * end_location)).into())
 }
