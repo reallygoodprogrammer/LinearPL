@@ -98,7 +98,7 @@ impl Particle {
     }
 }
 
-// Some Operation implementations to make life easier
+// Some Operation implementations to make math easier
 impl Add<Vec3> for Particle {
     type Output = Self;
 
