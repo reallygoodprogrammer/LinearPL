@@ -17,7 +17,6 @@ use crate::particle::Particle;
 /// such that their values are interpolated over the defined `period`
 /// in seconds through provided methods.
 #[derive(Debug, Clone)]
-#[allow(dead_code)]
 pub struct LinearParticles {
     particles: Vec<Particle>,
     start_location: Vec3,
@@ -35,6 +34,8 @@ pub struct LinearParticles {
 }
 
 impl LinearParticles {
+    /// Create a new LinearParticles struct with a starting location of
+    /// `start_loc` and an ending location of `end_loc`.
     pub fn new(start_loc: Vec3, end_loc: Vec3) -> Self {
         LinearParticles {
             start_location: start_loc,
@@ -53,11 +54,11 @@ impl LinearParticles {
         }
     }
 
-    ///  Set the period (length) of the LinearParticle's graphic.
+    /// Set the period (length) of the LinearParticle's graphic.
     ///
-    ///  # Arguments:
+    /// # Arguments:
     ///
-    ///  - p: `f32` total length of the LinearParticles particle generation.
+    /// - p: `f32` total length of the LinearParticles particle generation.
     pub fn set_period(&mut self, p: f32) -> Result<(), &str> {
         match p {
             p if p > 0. => {
@@ -199,9 +200,11 @@ impl LinearParticles {
         let current_time = self.start_time.elapsed().as_secs_f32();
 
         /*
-        if self.should_draw(self.map_float_value(self.densities, current_time)) {
-
+        if self.should_generate(self.map_float_value(self.densities, current_time)) {
+            // particle generation here
         }
+
+        // particle drawing here
         */
 
         if self.start_time.elapsed().as_secs_f32() > self.period {
@@ -216,10 +219,13 @@ impl LinearParticles {
         }
     }
 
-    fn should_draw(&mut self, chance: f32) -> bool {
+    fn should_generate(&mut self, chance: f32) -> bool {
         chance > self.rand_generator.random_range(0.0..1.0)
     }
 
+    // I would like to be able to use this with generic slice T for values,
+    // that way I can use the color vector with this function as well. For that
+    // I would also need to impl Add<Color>, Mul<f32> traits for Color.
     fn map_float_value(&self, values: &[f32], elapsed: f32) -> Result<f32, &str> {
         let ratio = values.len() as f32 / elapsed;
         let low = (elapsed * ratio).floor() as usize;
