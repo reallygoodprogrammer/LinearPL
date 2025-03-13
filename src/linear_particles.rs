@@ -163,8 +163,7 @@ impl Default for LinearParticles {
     }
 }
 
-// these are some helper functions for scaling different types of values
-//
+// find the linearly interpolated value from 'values' given the ratio 'elapsed' / 'total'
 fn map_float_value(values: &[f32], elapsed: f32, total: f32) -> Result<f32, String> {
     let ratio = elapsed / total;
     let len = values.len() - 1;
@@ -214,6 +213,7 @@ fn map_float_value_test() {
     assert_eq!(map_float_value(&values, 0.5, 1.0).unwrap_or(-1.0), 0.25);
 }
 
+// find the linearly interpolated color from 'colors' given the ratio 'elapsed' / 'total'
 fn map_color_value(
     colors: &[Color],
     elapsed: f32,
@@ -259,6 +259,8 @@ fn map_color_value(
     }
 }
 
+// Find the linearly interpolated location from 'start_location' to 'end_location'
+// given the 'locations' values and the ratio 'elapsed' / 'period'
 fn map_location(
     locations: &[f32],
     start_location: Vec3,
@@ -267,7 +269,6 @@ fn map_location(
     period: f32,
 ) -> Result<(f32, f32, f32), String> {
     let ratio = map_float_value(locations, elapsed, period)?;
-    println!("{} {}: {}", elapsed, period, ratio);
     let vratio = Vec3::new(ratio, ratio, ratio);
     let v = (start_location * vratio) + ((Vec3::ONE - vratio) * end_location);
     Ok(v.into())

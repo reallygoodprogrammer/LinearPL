@@ -38,12 +38,16 @@ async fn main() -> Result<(), String> {
     let mut static_part3 = Particle::new((0.2, 1., 4.), (1., 0., 0., 1.), 0.01, 1.);
 
     let mut lin_part = LinearParticles::new((-0.5, 1., 2.).into(), (0.5, 1., 2.).into());
-    lin_part.period = 5.;
-    lin_part.decay = 0.5;
-    lin_part.locations = vec![0.2, 1., 0., 0.8];
+    lin_part.period = 2.;
+    lin_part.decay = 0.09;
+    lin_part.locations = vec![0.2, 1., 0., 0.8, 0.2];
     lin_part.densities = vec![1.];
-    lin_part.colors = vec![Color::new(1., 1., 1., 1.)];
-    lin_part.sizes = vec![0.01];
+    lin_part.colors = vec![
+        Color::new(1., 1., 1., 1.), 
+        Color::new(0., 1., 1., 1.), 
+        Color::new(1., 1., 1., 1.)
+    ];
+    lin_part.sizes = vec![0.0, 0.05, 0.0];
 
     match lin_part.start_loop() {
         Err(v) => eprintln!("LinearParticles received error at startup: {:?}", v),
