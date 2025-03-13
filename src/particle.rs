@@ -8,7 +8,6 @@
 use macroquad::color::Color;
 use macroquad::math::Vec3;
 use macroquad::prelude::draw_cube;
-use std::ops::{Add, AddAssign, Sub, SubAssign};
 use std::time::{Duration, Instant};
 
 /// # Particle
@@ -82,14 +81,14 @@ impl Particle {
 
     /// Draw the Particle within the macroquad world coords.
     #[inline]
-    pub fn draw(&self) -> bool {
-        match self.start_time.elapsed() > self.length {
-            true => {
-                draw_cube(self.location, Vec3::splat(self.size), None, self.color);
-                true
-            }
-            false => false,
-        }
+    pub fn draw(&self) {
+        draw_cube(self.location, Vec3::splat(self.size), None, self.color);
+    }
+
+    /// Check if the Particle has finished its lifetime
+    #[inline]
+    pub fn is_finished(&self) -> bool {
+        self.start_time.elapsed() > self.length
     }
 
     /// Reset the ellapsed time for the Particle object
@@ -98,73 +97,8 @@ impl Particle {
     }
 }
 
-// Some Operation implementations to make math easier
-impl Add<Vec3> for Particle {
-    type Output = Self;
-
-    #[inline]
-    fn add(self, rhs: Vec3) -> Self::Output {
-        self.add_location(rhs.x, rhs.y, rhs.z)
-    }
-}
-
-impl AddAssign<Vec3> for Particle {
-    #[inline]
-    fn add_assign(&mut self, rhs: Vec3) {
-        *self = self.add_location(rhs.x, rhs.y, rhs.z);
-    }
-}
-
-impl Add<[f32; 3]> for Particle {
-    type Output = Self;
-
-    #[inline]
-    fn add(self, rhs: [f32; 3]) -> Self::Output {
-        self.add_location(rhs[0], rhs[1], rhs[2])
-    }
-}
-
-impl AddAssign<[f32; 3]> for Particle {
-    #[inline]
-    fn add_assign(&mut self, rhs: [f32; 3]) {
-        *self = self.add_location(rhs[0], rhs[1], rhs[2]);
-    }
-}
-
 impl Default for Particle {
     fn default() -> Self {
         Particle::new((0., 0., 0.), (0., 0., 0., 1.), 0.01, 1.)
-    }
-}
-
-impl Sub<Vec3> for Particle {
-    type Output = Self;
-
-    #[inline]
-    fn sub(self, rhs: Vec3) -> Self::Output {
-        self.sub_location(rhs.x, rhs.y, rhs.z)
-    }
-}
-
-impl SubAssign<Vec3> for Particle {
-    #[inline]
-    fn sub_assign(&mut self, rhs: Vec3) {
-        *self = self.sub_location(rhs.x, rhs.y, rhs.z);
-    }
-}
-
-impl Sub<[f32; 3]> for Particle {
-    type Output = Self;
-
-    #[inline]
-    fn sub(self, rhs: [f32; 3]) -> Self::Output {
-        self.sub_location(rhs[0], rhs[1], rhs[2])
-    }
-}
-
-impl SubAssign<[f32; 3]> for Particle {
-    #[inline]
-    fn sub_assign(&mut self, rhs: [f32; 3]) {
-        *self = self.sub_location(rhs[0], rhs[1], rhs[2]);
     }
 }

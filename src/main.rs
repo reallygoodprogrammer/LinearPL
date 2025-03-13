@@ -4,12 +4,13 @@
 //! the macroquad rust crate.
 
 use macroquad::prelude::*;
+use tdpl::linear_particles::LinearParticles;
 use tdpl::particle::Particle;
 
 const CAM_SPEED: f32 = 0.8;
 
 #[macroquad::main("tdpl example")]
-async fn main() {
+async fn main() -> Result<(), String> {
     let up = vec3(0., 1., 0.);
 
     let mut hrot: f32 = 1.18;
@@ -27,10 +28,31 @@ async fn main() {
     // mouse is pressed flag
     let mut mouse_pressed = false;
 
-    // some particles
+    // **********************************
+    // LIBRARY SETUP EXAMPLES START HERE!
+    // **********************************
+
+    // some static particles
     let mut static_part1 = Particle::new((-0.2, 1., 4.), (0., 1., 1., 1.), 0.01, 1.);
     let mut static_part2 = Particle::new((0., 1., 4.), (0., 1., 0., 1.), 0.01, 1.);
     let mut static_part3 = Particle::new((0.2, 1., 4.), (1., 0., 0., 1.), 0.01, 1.);
+
+    let mut lin_part = LinearParticles::new((-0.5, 1., 2.).into(), (0.5, 1., 2.).into());
+    lin_part.period = 5.;
+    lin_part.decay = 0.5;
+    lin_part.locations = vec![0.2, 1., 0., 0.8];
+    lin_part.densities = vec![1.];
+    lin_part.colors = vec![Color::new(1., 1., 1., 1.)];
+    lin_part.sizes = vec![0.01];
+
+    match lin_part.start_loop() {
+        Err(v) => eprintln!("LinearParticles received error at startup: {:?}", v),
+        Ok(()) => println!("LinearParticles startup successful."),
+    };
+
+    // **********************************
+    // END HERE
+    // **********************************
 
     loop {
         if is_key_pressed(KeyCode::Escape) {
@@ -64,14 +86,23 @@ async fn main() {
             ..Default::default()
         });
 
+        // **********************************
+        // LIBRARY DRAW EXAMPLES START HERE!
+        // **********************************
+
         // draw static particles, reset their clock
         static_part1.draw();
         static_part2.draw();
         static_part3.draw();
-
         static_part1.reset();
         static_part2.reset();
         static_part3.reset();
+
+        lin_part.next_frame()?;
+
+        // **********************************
+        // END HERE
+        // **********************************
 
         draw_cube_wires(vec3(-4., 1., 0.), vec3(2., 2., 2.), GREEN);
         draw_cube_wires(vec3(0., 1., 4.), vec3(2., 2., 2.), BLUE);
@@ -81,7 +112,7 @@ async fn main() {
 
         set_default_camera();
         draw_text(
-            "Hello, world!",
+            "Particles example!",
             screen_width() / 2.,
             screen_height() / 2.,
             30.,
@@ -90,4 +121,5 @@ async fn main() {
 
         next_frame().await;
     }
+    Ok(())
 }

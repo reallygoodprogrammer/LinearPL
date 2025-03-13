@@ -21,12 +21,12 @@ pub struct LinearParticles {
     particles: Vec<Particle>,
     start_location: Vec3,
     end_location: Vec3,
-    locations: Vec<f32>,
-    densities: Vec<f32>,
-    colors: Vec<Color>,
-    sizes: Vec<f32>,
-    period: f32,
-    decay: f32,
+    pub locations: Vec<f32>,
+    pub densities: Vec<f32>,
+    pub colors: Vec<Color>,
+    pub sizes: Vec<f32>,
+    pub period: f32,
+    pub decay: f32,
     initialized: bool,
     looping: bool,
     active: bool,
@@ -56,112 +56,6 @@ impl LinearParticles {
         }
     }
 
-    /// Set the period (length) of the LinearParticle's graphic.
-    ///
-    /// # Arguments:
-    ///
-    /// - p: `f32` total length of the LinearParticles particle generation.
-    pub fn set_period(&mut self, p: f32) -> Result<(), &str> {
-        match p {
-            p if p > 0. => {
-                self.period = p;
-                Ok(())
-            }
-            _ => Err("value error: period should be positive value\n"),
-        }
-    }
-
-    /// Set the decay (Particle length) of the LinearParticle's graphic.
-    ///
-    /// # Arguments:
-    ///
-    /// - d: `f32` total length of the particles generation.
-    pub fn set_decay(&mut self, d: f32) -> Result<(), &str> {
-        match d {
-            d if d > 0. => {
-                self.decay = d;
-                Ok(())
-            }
-            _ => Err("value error: decay should be positive value\n"),
-        }
-    }
-
-    /// Set locations for particles to be drawn in relation to start and
-    /// end location values.
-    ///
-    /// # Arguments:
-    ///
-    /// - locs: vec of 0 to 1 `f32` values representing locations between
-    ///   `start_location` and `end_location`, interpolated between when
-    ///   LinearParticles is being actively drawn.
-    pub fn set_locations(&mut self, locs: Vec<f32>) -> Result<(), &str> {
-        if locs.is_empty() {
-            return Err("empty vec: location Vec cannot be empty");
-        }
-        for l in locs.iter() {
-            if *l > 1. || *l < 0. {
-                return Err("value error: location values should be between 0 and 1 inclusive");
-            };
-        }
-        self.locations = locs.clone();
-        Ok(())
-    }
-
-    /// Set densities of particles to be generated.
-    ///
-    /// # Arguments:
-    ///
-    /// - dens: vec of 0-1 `f32` values representing chance of particle
-    ///   being drawn along the line for the given frame, interpolated between when
-    ///   LinearParticles is being actively drawn.
-    pub fn set_densities(&mut self, dens: Vec<f32>) -> Result<(), &str> {
-        if dens.is_empty() {
-            return Err("empty vec: densities Vec cannot be empty");
-        }
-        for d in dens.iter() {
-            if *d > 1. || *d < 0. {
-                return Err("value error: density values should be between 0 and 1 inclusive");
-            };
-        }
-        self.densities = dens.clone();
-        Ok(())
-    }
-
-    /// Set colors for particles to be generated as.
-    ///
-    /// # Arguments:
-    ///
-    /// - cols: vec of `macroquad::color::Color` structs representing the color individual
-    ///   Particle objects should be drawn with, interpolated between when LinearParticles is
-    ///   being actively drawn.
-    pub fn set_colors(&mut self, cols: Vec<Color>) -> Result<(), &str> {
-        if cols.is_empty() {
-            return Err("empty vec: color Vec cannot be empty");
-        }
-        self.colors = cols.clone();
-        Ok(())
-    }
-
-    /// Set size for particles to be generated as.
-    ///
-    /// # Arguments:
-    ///
-    /// - sizs: vec of positive `f32` values representing the size of the individual
-    ///   Particle objects when drawn, interpolated between when LinearParticles is being
-    ///   actively drawn.
-    pub fn set_sizes(&mut self, sizs: Vec<f32>) -> Result<(), &str> {
-        if sizs.is_empty() {
-            return Err("empty vec: sizes Vec cannot be empty");
-        }
-        for s in sizs.iter() {
-            if *s > 1. || *s < 0. {
-                return Err("value error: size values should be positive floats\n");
-            };
-        }
-        self.sizes = sizs.clone();
-        Ok(())
-    }
-
     /// Check if LinearParticles is active.
     /// Returns `true` if LinearParticles is in active state. Else `false`.
     pub fn is_active(&self) -> bool {
@@ -175,13 +69,13 @@ impl LinearParticles {
     }
 
     /// Set up LinearParticles into its looping active state.
-    pub fn r#loop(&mut self) {
-        self.setup(true);
+    pub fn start_loop(&mut self) -> Result<(), String> {
+        self.setup(true)
     }
 
     /// Set up LinearParticles into its active state.
-    pub fn start(&mut self) {
-        self.setup(false);
+    pub fn start(&mut self) -> Result<(), String> {
+        self.setup(false)
     }
 
     /// Tear down and deactivate LinearParticles object.
@@ -193,12 +87,20 @@ impl LinearParticles {
         self.start_time = Instant::now();
     }
 
-    fn setup(&mut self, should_loop: bool) {
+    fn setup(&mut self, should_loop: bool) -> Result<(), String> {
+        check_densities(&self.densities)?;
+        check_locations(&self.locations)?;
+        check_colors(&self.colors)?;
+        check_sizes(&self.sizes)?;
+        check_period(self.period)?;
+        check_decay(self.decay)?;
+
         self.particles.clear();
         self.looping = should_loop;
         self.active = true;
         self.initialized = true;
         self.reset_time();
+        Ok(())
     }
 
     fn tear_down(&mut self) {
@@ -217,10 +119,10 @@ impl LinearParticles {
     ///
     /// - `true` if LinearParticle is still 'active' in next frame,
     /// - `false` otherwise
-    pub fn next_frame(&mut self) -> Result<bool, &'static str> {
+    pub fn next_frame(&mut self) -> Result<bool, String> {
         let current_time = self.start_time.elapsed().as_secs_f32();
 
-        let gen_flag = map_float_value(&self.densities, current_time)?;
+        let gen_flag = map_float_value(&self.densities, current_time, self.period)?;
         if self.should_generate(gen_flag) {
             let p = Particle::new(
                 map_location(
@@ -228,13 +130,19 @@ impl LinearParticles {
                     self.start_location,
                     self.end_location,
                     current_time,
+                    self.period,
                 )?,
-                map_color_value(&self.colors, current_time)?,
-                map_float_value(&self.sizes, current_time)?,
+                map_color_value(&self.colors, current_time, self.period)?,
+                map_float_value(&self.sizes, current_time, self.period)?,
                 self.decay,
             );
             self.particles.push(p);
         }
+
+        for p in self.particles.iter_mut() {
+            (*p).draw();
+        }
+        self.particles.retain(|&p| !p.is_finished());
 
         if self.start_time.elapsed().as_secs_f32() > self.period {
             if self.looping {
@@ -257,53 +165,96 @@ impl Default for LinearParticles {
 
 // these are some helper functions for scaling different types of values
 //
-fn map_float_value(values: &[f32], elapsed: f32) -> Result<f32, &'static str> {
-    let ratio = values.len() as f32 / elapsed;
-    let low = (elapsed * ratio).floor() as usize;
-    let high = (elapsed * ratio).ceil() as usize;
+fn map_float_value(values: &[f32], elapsed: f32, total: f32) -> Result<f32, String> {
+    let ratio = elapsed / total;
+    let len = values.len() - 1;
+    let vratio = len as f32 * ratio;
+    let low = (vratio.floor()) as usize;
+    let high = (vratio.ceil()) as usize;
+
+    let low = if low > len { len } else { low };
+    let high = if high > len { len } else { high };
 
     let first_value = match values.get(low) {
         Some(val) => val,
         None => {
-            return Err("unexpected error in map_float_value indexing!");
+            return Err(format!(
+                "map_float_values indexing error: {} of {}",
+                low, len
+            ));
         }
     };
 
     if low == high {
         Ok(*first_value)
     } else {
-        let val_ratio = elapsed - (low as f32);
         match values.get(high) {
-            Some(val) => Ok((first_value * val_ratio) + (val * (1.0 - val_ratio))),
-            None => Err("unexpected error in map_float_value indexing!"),
+            Some(val) => {
+                let vratio_norm = high as f32 - vratio;
+                Ok((first_value * vratio_norm) + (val * (1.0 - vratio_norm)))
+            }
+            None => Err(format!(
+                "map_float_values indexing error: {} of {}",
+                high, len
+            )),
         }
     }
 }
 
-fn map_color_value(colors: &[Color], elapsed: f32) -> Result<(f32, f32, f32, f32), &'static str> {
-    let ratio = colors.len() as f32 / elapsed;
-    let low = (elapsed * ratio).floor() as usize;
-    let high = (elapsed * ratio).ceil() as usize;
+#[test]
+fn map_float_value_test() {
+    let values = vec![0.0, 1.0];
+    assert_eq!(map_float_value(&values, 0.0, 1.0).unwrap_or(-1.0), 0.0);
+    assert_eq!(
+        map_float_value(&values, 2.0 / 3.0, 1.0).unwrap_or(-1.0),
+        2.0 / 3.0
+    );
+
+    let values = vec![1.0, 0.0, 0.5, 0.0];
+    assert_eq!(map_float_value(&values, 0.5, 1.0).unwrap_or(-1.0), 0.25);
+}
+
+fn map_color_value(
+    colors: &[Color],
+    elapsed: f32,
+    total: f32,
+) -> Result<(f32, f32, f32, f32), String> {
+    let ratio = elapsed / total;
+    let len = colors.len() - 1;
+    let vratio = len as f32 * ratio;
+    let low = ((len as f32 * ratio).floor()) as usize;
+    let high = ((len as f32 * ratio).ceil()) as usize;
+
+    let low = if low > len { len } else { low };
+    let high = if high > len { len } else { high };
 
     let first_value = match colors.get(low) {
         Some(val) => val,
         None => {
-            return Err("unexpected error in map_Color_value indexing!");
+            return Err(format!(
+                "map_color_value indexing error: {} of {}",
+                low, len
+            ));
         }
     };
 
     if low == high {
         Ok((first_value.r, first_value.g, first_value.b, first_value.a))
     } else {
-        let val_ratio = elapsed - (low as f32);
         match colors.get(high) {
-            Some(val) => Ok((
-                (first_value.r * val_ratio) + (val.r * (1.0 - val_ratio)),
-                (first_value.g * val_ratio) + (val.g * (1.0 - val_ratio)),
-                (first_value.b * val_ratio) + (val.b * (1.0 - val_ratio)),
-                (first_value.a * val_ratio) + (val.a * (1.0 - val_ratio)),
+            Some(val) => {
+                let vratio_norm = high as f32 - vratio;
+                Ok((
+                    (first_value.r * vratio_norm) + (val.r * (1.0 - vratio_norm)),
+                    (first_value.g * vratio_norm) + (val.g * (1.0 - vratio_norm)),
+                    (first_value.b * vratio_norm) + (val.b * (1.0 - vratio_norm)),
+                    (first_value.a * vratio_norm) + (val.a * (1.0 - vratio_norm)),
+                ))
+            }
+            None => Err(format!(
+                "map_color_value indexing error: {} of {}",
+                high, len
             )),
-            None => Err("unexpected error in map_Color_value indexing!"),
         }
     }
 }
@@ -313,8 +264,80 @@ fn map_location(
     start_location: Vec3,
     end_location: Vec3,
     elapsed: f32,
-) -> Result<(f32, f32, f32), &'static str> {
-    let ratio = map_float_value(locations, elapsed)?;
+    period: f32,
+) -> Result<(f32, f32, f32), String> {
+    let ratio = map_float_value(locations, elapsed, period)?;
+    println!("{} {}: {}", elapsed, period, ratio);
     let vratio = Vec3::new(ratio, ratio, ratio);
-    Ok(((start_location * vratio) + ((Vec3::ONE - vratio) * end_location)).into())
+    let v = (start_location * vratio) + ((Vec3::ONE - vratio) * end_location);
+    Ok(v.into())
+}
+
+fn check_period(period: f32) -> Result<(), String> {
+    match period {
+        p if p >= 0. => Ok(()),
+        p => Err(format!(
+            "value error: {} period should be positive value",
+            p
+        )),
+    }
+}
+
+fn check_decay(decay: f32) -> Result<(), String> {
+    match decay {
+        d if d >= 0. => Ok(()),
+        d => Err(format!("value error: {} decay should be positive value", d)),
+    }
+}
+
+fn check_locations(locations: &[f32]) -> Result<(), String> {
+    if locations.is_empty() {
+        return Err(String::from("empty vec: location Vec cannot be empty"));
+    }
+    for l in locations.iter() {
+        if *l > 1. || *l < 0. {
+            return Err(format!(
+                "value error: {} location interpolation should be between 0 and 1 inclusive",
+                *l
+            ));
+        };
+    }
+    Ok(())
+}
+
+fn check_densities(densities: &[f32]) -> Result<(), String> {
+    if densities.is_empty() {
+        return Err(String::from("empty vec: densities Vec cannot be empty"));
+    }
+    for d in densities.iter() {
+        if *d > 1. || *d < 0. {
+            return Err(format!(
+                "value error: {} density value should be between 0 and 1 inclusive",
+                *d
+            ));
+        };
+    }
+    Ok(())
+}
+
+fn check_colors(colors: &[Color]) -> Result<(), String> {
+    if colors.is_empty() {
+        return Err(String::from("empty vec: color Vec cannot be empty"));
+    }
+    Ok(())
+}
+
+fn check_sizes(sizes: &[f32]) -> Result<(), String> {
+    if sizes.is_empty() {
+        return Err(String::from("empty vec: sizes Vec cannot be empty"));
+    }
+    for s in sizes.iter() {
+        if *s < 0. {
+            return Err(format!(
+                "value error: {} size value should be positive floats",
+                *s
+            ));
+        };
+    }
+    Ok(())
 }
