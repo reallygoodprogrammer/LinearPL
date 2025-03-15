@@ -33,25 +33,47 @@ async fn main() -> Result<(), String> {
     // **********************************
 
     // some static particles
-    let mut static_part1 = Particle::new((-0.2, 1., 4.), (0., 1., 1., 1.), 0.01, 1.);
-    let mut static_part2 = Particle::new((0., 1., 4.), (0., 1., 0., 1.), 0.01, 1.);
-    let mut static_part3 = Particle::new((0.2, 1., 4.), (1., 0., 0., 1.), 0.01, 1.);
+    let mut static_part1 = Particle::new((-0.2, 1., 4.), (0., 1., 1., 1.), 0.01, 1., false);
+    let mut static_part2 = Particle::new((0., 1., 4.), (0., 1., 0., 1.), 0.01, 1., false);
+    let mut static_part3 = Particle::new((0.2, 1., 4.), (1., 0., 0., 1.), 0.01, 1., false);
 
-    let mut lin_part = LinearParticles::new((-0.5, 1., 2.).into(), (0.5, 1., 2.).into());
-    lin_part.period = 2.;
-    lin_part.decay = 0.09;
-    lin_part.locations = vec![0.2, 1., 0., 0.8, 0.2];
-    lin_part.densities = vec![1.];
-    lin_part.colors = vec![
-        Color::new(1., 1., 1., 1.), 
-        Color::new(0., 1., 1., 1.), 
-        Color::new(1., 1., 1., 1.)
-    ];
-    lin_part.sizes = vec![0.0, 0.05, 0.0];
+    let mut lin_part_one = LinearParticles::new((-1., 0., 3.).into(), (1., 0., 3.).into())
+        .with_period(2.5)
+        .with_decay(0.07)
+        .with_locations(&[0., 0., 1., 1.])
+        .with_colors(&[
+            Color::new(0., 1., 1., 0.),
+            Color::new(0., 1., 1., 0.),
+            Color::new(0., 0.75, 1., 1.),
+            Color::new(0., 0.25, 1., 1.),
+            Color::new(0., 0., 1., 0.),
+            Color::new(0., 0., 1., 0.),
+        ]);
 
-    match lin_part.start_loop() {
-        Err(v) => eprintln!("LinearParticles received error at startup: {:?}", v),
-        Ok(()) => println!("LinearParticles startup successful."),
+    let mut lin_part_two = lin_part_one
+        .clone()
+        .with_start(vec3(-1., 0., 5.))
+        .with_end(vec3(1., 0., 5.));
+    let mut lin_part_three = lin_part_one
+        .clone()
+        .with_start(vec3(-1., 2., 3.))
+        .with_end(vec3(1., 2., 3.));
+    let mut lin_part_four = lin_part_one
+        .clone()
+        .with_start(vec3(-1., 2., 5.))
+        .with_end(vec3(1., 2., 5.));
+
+    if let Err(v) = lin_part_one.start_loop() {
+        eprintln!("lin_part_one received error at startup: {:?}", v);
+    };
+    if let Err(v) = lin_part_two.start_loop() {
+        eprintln!("lin_part_one received error at startup: {:?}", v);
+    };
+    if let Err(v) = lin_part_three.start_loop() {
+        eprintln!("lin_part_one received error at startup: {:?}", v);
+    };
+    if let Err(v) = lin_part_four.start_loop() {
+        eprintln!("lin_part_one received error at startup: {:?}", v);
     };
 
     // **********************************
@@ -102,14 +124,16 @@ async fn main() -> Result<(), String> {
         static_part2.reset();
         static_part3.reset();
 
-        lin_part.next_frame()?;
+        lin_part_one.display()?;
+        lin_part_two.display()?;
+        lin_part_three.display()?;
+        lin_part_four.display()?;
 
         // **********************************
         // END HERE
         // **********************************
 
         draw_cube_wires(vec3(-4., 1., 0.), vec3(2., 2., 2.), GREEN);
-        draw_cube_wires(vec3(0., 1., 4.), vec3(2., 2., 2.), BLUE);
         draw_cube_wires(vec3(4., 1., 0.), vec3(2., 2., 2.), RED);
         draw_cube_wires(vec3(0., 4., 0.), vec3(2., 2., 2.), YELLOW);
         draw_cube_wires(vec3(0., 1., -4.), vec3(2., 2., 2.), ORANGE);

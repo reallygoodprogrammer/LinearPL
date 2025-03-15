@@ -10,18 +10,15 @@ use macroquad::math::Vec3;
 use macroquad::prelude::draw_cube;
 use std::time::{Duration, Instant};
 
-/// # Particle
-///
 /// Single Particle struct. Contains the `location`, `color`, and
 /// `size` of the Particle.
-///
-
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Particle {
     location: Vec3,
     color: Color,
     size: f32,
     length: Duration,
+    sloped: bool,
     start_time: Instant,
 }
 
@@ -31,14 +28,16 @@ impl Particle {
     pub fn new(
         (x, y, z): (f32, f32, f32),
         (r, g, b, a): (f32, f32, f32, f32),
-        s: f32,
+        size: f32,
         l: f32,
+        sloped: bool,
     ) -> Self {
         Particle {
             location: Vec3::new(x, y, z),
             color: Color::new(r, g, b, a),
-            size: s,
+            size,
             length: Duration::from_millis((l * 1000.) as u64),
+            sloped,
             start_time: Instant::now(),
         }
     }
@@ -81,8 +80,14 @@ impl Particle {
 
     /// Draw the Particle within the macroquad world coords.
     #[inline]
-    pub fn draw(&self) {
+    pub fn draw(&mut self) {
         draw_cube(self.location, Vec3::splat(self.size), None, self.color);
+        if self.sloped {
+            self.color.r /= 2.;
+            self.color.g /= 2.;
+            self.color.b /= 2.;
+            self.color.a /= 2.;
+        }
     }
 
     /// Check if the Particle has finished its lifetime
@@ -99,6 +104,6 @@ impl Particle {
 
 impl Default for Particle {
     fn default() -> Self {
-        Particle::new((0., 0., 0.), (0., 0., 0., 1.), 0.01, 1.)
+        Particle::new((0., 0., 0.), (0., 0., 0., 1.), 0.01, 1., false)
     }
 }
