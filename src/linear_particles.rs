@@ -6,9 +6,15 @@ use macroquad::color::Color;
 use macroquad::math::Vec3;
 use rand::rngs::ThreadRng;
 use rand::{rng, Rng};
+use std::slice::{Iter, IterMut};
 use std::time::Instant;
 
 use crate::particle::Particle;
+use crate::particle_sys::ParticleSys;
+
+// ***************************************
+// LinearParticles
+// ***************************************
 
 /// LinearParticle system. User should be in charge of setting
 /// appropriate `locations`, `densities`, `colors`, `sizes`
@@ -54,109 +60,9 @@ impl LinearParticles {
         }
     }
 
-    /// Check if LinearParticles is active.
-    /// Returns `true` if LinearParticles is in active state. Else `false`.
-    pub fn is_active(&self) -> bool {
-        self.active
-    }
-
-    /// Check if LinearParticles is looping.
-    /// Return `true` if LinearParticles is in active looping state. Else `false`.
-    pub fn is_looping(&self) -> bool {
-        self.active && self.looping
-    }
-
-    /// Set up LinearParticles into its looping active state.
-    pub fn start_loop(&mut self) -> Result<(), String> {
-        self.setup(true)
-    }
-
-    /// Set up LinearParticles into its active state.
-    pub fn start(&mut self) -> Result<(), String> {
-        self.setup(false)
-    }
-
-    /// Tear down and deactivate LinearParticles object.
-    pub fn stop(&mut self) {
-        self.tear_down();
-    }
-
-    // reset the elapsed time counter
-    fn reset_time(&mut self) {
-        self.start_time = Instant::now();
-    }
-
-    // initial setup for LinearParticles and check that values
-    // assigned to object are valid
-    fn setup(&mut self, should_loop: bool) -> Result<(), String> {
-        check_densities(&self.densities)?;
-        check_locations(&self.locations)?;
-        check_colors(&self.colors)?;
-        check_sizes(&self.sizes)?;
-        check_period(self.period)?;
-        check_decay(self.decay)?;
-
-        self.particles.clear();
-        self.looping = should_loop;
-        self.active = true;
-        self.initialized = true;
-        self.reset_time();
-        Ok(())
-    }
-
-    // de-setup
-    fn tear_down(&mut self) {
-        self.active = false;
-        self.initialized = false;
-    }
-
+    // used in density calculations
     fn should_generate(&mut self, chance: f32) -> bool {
         chance > self.rand_generator.random_range(0.0..1.0)
-    }
-
-    /// Display the next frame available from the LinearParticle
-    /// system defined by users previous called settings.
-    ///
-    /// # Returns:
-    ///
-    /// - `true` if LinearParticle is still 'active' in next frame,
-    /// - `false` otherwise
-    pub fn display(&mut self) -> Result<bool, String> {
-        let current_time = self.start_time.elapsed().as_secs_f32();
-
-        let gen_flag = map_float_value(&self.densities, current_time, self.period)?;
-        if self.should_generate(gen_flag) {
-            let p = Particle::new(
-                map_location(
-                    &self.locations,
-                    self.start_location,
-                    self.end_location,
-                    current_time,
-                    self.period,
-                )?,
-                map_color_value(&self.colors, current_time, self.period)?,
-                map_float_value(&self.sizes, current_time, self.period)?,
-                self.decay,
-                true,
-            );
-            self.particles.push(p);
-        }
-
-        for p in self.particles.iter_mut() {
-            (*p).draw();
-        }
-        self.particles.retain(|&p| !p.is_finished());
-
-        if self.start_time.elapsed().as_secs_f32() > self.period {
-            if self.looping {
-                self.reset_time();
-            } else {
-                self.tear_down();
-            }
-            Ok(false)
-        } else {
-            Ok(true)
-        }
     }
 
     /// Return self with period `p`.
@@ -196,13 +102,8 @@ impl LinearParticles {
     }
 
     /// Return self with start-location `sl`.
-    pub fn with_start(mut self, sl: Vec3) -> Self {
+    pub fn with_start_end(mut self, sl: Vec3, el: Vec3) -> Self {
         self.start_location = sl;
-        self
-    }
-
-    /// Return self with end-location `el`.
-    pub fn with_end(mut self, el: Vec3) -> Self {
         self.end_location = el;
         self
     }
@@ -222,7 +123,103 @@ impl LinearParticles {
 
 // ***************************************
 // Impl's for LinearParticles
-// ***************************************
+
+impl ParticleSys for LinearParticles {
+    type T = Particle;
+
+    fn is_active(&self) -> bool {
+        self.active
+    }
+
+    fn is_looping(&self) -> bool {
+        self.active && self.looping
+    }
+
+    fn is_initialized(&mut self) -> bool {
+        self.initialized
+    }
+
+    fn start_loop(&mut self) -> Result<(), String> {
+        self.setup(true)
+    }
+
+    fn start(&mut self) -> Result<(), String> {
+        self.setup(false)
+    }
+
+    fn stop(&mut self) {
+        self.tear_down();
+    }
+
+    fn reset_time(&mut self) {
+        self.start_time = Instant::now();
+    }
+
+    fn elapsed_time(&mut self) -> Option<f32> {
+        Some(self.start_time.elapsed().as_secs_f32())
+    }
+
+    fn setup(&mut self, should_loop: bool) -> Result<(), String> {
+        check_densities(&self.densities)?;
+        check_locations(&self.locations)?;
+        check_colors(&self.colors)?;
+        check_sizes(&self.sizes)?;
+        check_period(self.period)?;
+        check_decay(self.decay)?;
+
+        self.particles.clear();
+        self.looping = should_loop;
+        self.active = true;
+        self.initialized = true;
+        self.reset_time();
+        Ok(())
+    }
+
+    fn tear_down(&mut self) {
+        self.active = false;
+        self.initialized = false;
+    }
+
+    fn next_frame(&mut self, time: Option<f32>) -> Result<bool, String> {
+        let current_time = match time {
+            Some(v) => v,
+            None => self.start_time.elapsed().as_secs_f32(),
+        };
+
+        let gen_flag = map_float_value(&self.densities, current_time, self.period)?;
+        if self.should_generate(gen_flag) {
+            let p = Particle::new(
+                map_location(
+                    &self.locations,
+                    self.start_location,
+                    self.end_location,
+                    current_time,
+                    self.period,
+                )?,
+                map_color_value(&self.colors, current_time, self.period)?,
+                map_float_value(&self.sizes, current_time, self.period)?,
+                self.decay,
+                true,
+            );
+            self.particles.push(p);
+        }
+
+        for p in self.particles.iter_mut() {
+            (*p).draw();
+        }
+        self.particles.retain(|&p| !p.is_finished());
+
+        Ok(self.start_time.elapsed().as_secs_f32() <= self.period)
+    }
+
+    fn iter(&self) -> Iter<'_, Particle> {
+        self.particles.iter()
+    }
+
+    fn iter_mut(&mut self) -> IterMut<'_, Particle> {
+        self.particles.iter_mut()
+    }
+}
 
 impl Default for LinearParticles {
     fn default() -> Self {
@@ -231,7 +228,39 @@ impl Default for LinearParticles {
 }
 
 // ***************************************
-// Other functions used by LinearParticles
+// LinearGrp
+// ***************************************
+
+/// Group of LinearParticles objects with a synced period and
+/// start time.
+pub struct LinearGrp {
+    pub period: f32,
+    linear_particles: Vec<LinearParticles>,
+    start_time: Instant,
+}
+
+impl LinearGrp {
+    /// Create a new group of LinearParticles objects.
+    pub fn new(period: f32, linparts: &[LinearParticles]) -> Self {
+        LinearGrp {
+            period,
+            linear_particles: linparts.into(),
+            start_time: Instant::now(),
+        }
+    }
+
+    /// Return cloned self with period `p`. Because of clone,
+    /// this could be an expensive operation depending on the number of
+    /// LinearParticles in the group. It is typically better to simply
+    /// set `self.period` to a positive value yourself.
+    pub fn with_period(mut self, p: f32) -> Self {
+        self.period = p;
+        self
+    }
+}
+
+// ***************************************
+// Other functions
 // ***************************************
 
 // find the linearly interpolated value from 'values' given the ratio 'elapsed' / 'total'

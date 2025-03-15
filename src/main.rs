@@ -4,8 +4,10 @@
 //! the macroquad rust crate.
 
 use macroquad::prelude::*;
+
 use tdpl::linear_particles::LinearParticles;
 use tdpl::particle::Particle;
+use tdpl::particle_sys::ParticleSys;
 
 const CAM_SPEED: f32 = 0.8;
 
@@ -49,19 +51,15 @@ async fn main() -> Result<(), String> {
             Color::new(0., 0., 1., 0.),
             Color::new(0., 0., 1., 0.),
         ]);
-
     let mut lin_part_two = lin_part_one
         .clone()
-        .with_start(vec3(-1., 0., 5.))
-        .with_end(vec3(1., 0., 5.));
+        .with_start_end(vec3(-1., 0., 5.), vec3(1., 0., 5.));
     let mut lin_part_three = lin_part_one
         .clone()
-        .with_start(vec3(-1., 2., 3.))
-        .with_end(vec3(1., 2., 3.));
+        .with_start_end(vec3(-1., 2., 3.), vec3(1., 2., 3.));
     let mut lin_part_four = lin_part_one
         .clone()
-        .with_start(vec3(-1., 2., 5.))
-        .with_end(vec3(1., 2., 5.));
+        .with_start_end(vec3(-1., 2., 5.), vec3(1., 2., 5.));
 
     if let Err(v) = lin_part_one.start_loop() {
         eprintln!("lin_part_one received error at startup: {:?}", v);
@@ -124,10 +122,10 @@ async fn main() -> Result<(), String> {
         static_part2.reset();
         static_part3.reset();
 
-        lin_part_one.display()?;
-        lin_part_two.display()?;
-        lin_part_three.display()?;
-        lin_part_four.display()?;
+        lin_part_one.run()?;
+        lin_part_two.run()?;
+        lin_part_three.run()?;
+        lin_part_four.run()?;
 
         // **********************************
         // END HERE
