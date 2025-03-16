@@ -5,7 +5,7 @@
 
 use macroquad::prelude::*;
 
-use tdpl::linear_particles::LinearParticles;
+use tdpl::linear_particles::{LinearGrp, LinearParticles};
 use tdpl::particle::Particle;
 use tdpl::particle_sys::ParticleSys;
 
@@ -39,9 +39,9 @@ async fn main() -> Result<(), String> {
     let mut static_part2 = Particle::new((0., 1., 4.), (0., 1., 0., 1.), 0.01, 1., false);
     let mut static_part3 = Particle::new((0.2, 1., 4.), (1., 0., 0., 1.), 0.01, 1., false);
 
-    let mut lin_part_one = LinearParticles::new((-1., 0., 3.).into(), (1., 0., 3.).into())
-        .with_period(2.5)
-        .with_decay(0.07)
+    // some linear particle systems
+    let lin_part_h = LinearParticles::new((-1., 0., 3.).into(), (1., 0., 3.).into())
+        .with_decay(1.4)
         .with_locations(&[0., 0., 1., 1.])
         .with_colors(&[
             Color::new(0., 1., 1., 0.),
@@ -51,33 +51,59 @@ async fn main() -> Result<(), String> {
             Color::new(0., 0., 1., 0.),
             Color::new(0., 0., 1., 0.),
         ]);
-    let mut lin_part_two = lin_part_one
-        .clone()
-        .with_start_end(vec3(-1., 0., 5.), vec3(1., 0., 5.));
-    let mut lin_part_three = lin_part_one
-        .clone()
-        .with_start_end(vec3(-1., 2., 3.), vec3(1., 2., 3.));
-    let mut lin_part_four = lin_part_one
-        .clone()
-        .with_start_end(vec3(-1., 2., 5.), vec3(1., 2., 5.));
+    let lin_part_v = LinearParticles::new((-1., 0., 3.).into(), (-1., 2., 3.).into())
+        .with_decay(2.0)
+        .with_locations(&[1., 0., 1.])
+        .with_colors(&[PINK, PURPLE, RED, VIOLET]);
+    let mut linear_grp = LinearGrp::new(
+        3.,
+        &[
+            lin_part_h.clone(),
+            lin_part_h
+                .clone()
+                .with_start_end(vec3(1., 0., 5.), vec3(-1., 0., 5.)),
+            lin_part_h
+                .clone()
+                .with_start_end(vec3(-1., 2., 3.), vec3(1., 2., 3.)),
+            lin_part_h
+                .clone()
+                .with_start_end(vec3(1., 2., 5.), vec3(-1., 2., 5.)),
+            lin_part_h
+                .clone()
+                .with_start_end(vec3(-1., 0., 5.), vec3(-1., 0., 3.)),
+            lin_part_h
+                .clone()
+                .with_start_end(vec3(1., 0., 3.), vec3(1., 0., 5.)),
+            lin_part_h
+                .clone()
+                .with_start_end(vec3(-1., 2., 5.), vec3(-1., 2., 3.)),
+            lin_part_h
+                .clone()
+                .with_start_end(vec3(1., 2., 3.), vec3(1., 2., 5.)),
+            lin_part_v.clone(),
+            lin_part_v
+                .clone()
+                .with_start_end(vec3(1., 0., 3.), vec3(1., 2., 3.)),
+            lin_part_v
+                .clone()
+                .with_start_end(vec3(1., 0., 5.), vec3(1., 2., 5.)),
+            lin_part_v
+                .clone()
+                .with_start_end(vec3(-1., 0., 5.), vec3(-1., 2., 5.)),
+        ],
+    );
 
-    if let Err(v) = lin_part_one.start_loop() {
-        eprintln!("lin_part_one received error at startup: {:?}", v);
-    };
-    if let Err(v) = lin_part_two.start_loop() {
-        eprintln!("lin_part_one received error at startup: {:?}", v);
-    };
-    if let Err(v) = lin_part_three.start_loop() {
-        eprintln!("lin_part_one received error at startup: {:?}", v);
-    };
-    if let Err(v) = lin_part_four.start_loop() {
-        eprintln!("lin_part_one received error at startup: {:?}", v);
+    if let Err(v) = linear_grp.start_loop() {
+        eprintln!("linear_grp received error at startup: {:?}", v);
     };
 
     // **********************************
     // END HERE
     // **********************************
 
+    let fps_reset = 100;
+    let mut fps_counter = 0;
+    let mut fps_val = 0;
     loop {
         if is_key_pressed(KeyCode::Escape) {
             break;
@@ -114,7 +140,7 @@ async fn main() -> Result<(), String> {
         // LIBRARY DRAW EXAMPLES START HERE!
         // **********************************
 
-        // draw static particles, reset their clock
+        // draw static particles manually, reset their clocks
         static_part1.draw();
         static_part2.draw();
         static_part3.draw();
@@ -122,10 +148,8 @@ async fn main() -> Result<(), String> {
         static_part2.reset();
         static_part3.reset();
 
-        lin_part_one.run()?;
-        lin_part_two.run()?;
-        lin_part_three.run()?;
-        lin_part_four.run()?;
+        // draw the group of linear particle systems
+        linear_grp.run()?;
 
         // **********************************
         // END HERE
@@ -136,11 +160,17 @@ async fn main() -> Result<(), String> {
         draw_cube_wires(vec3(0., 4., 0.), vec3(2., 2., 2.), YELLOW);
         draw_cube_wires(vec3(0., 1., -4.), vec3(2., 2., 2.), ORANGE);
 
+        fps_counter += 1;
+        if fps_counter % fps_reset == 0 {
+            fps_counter = 0;
+            fps_val = get_fps();
+        }
+
         set_default_camera();
         draw_text(
-            "Particles example!",
-            screen_width() / 2.,
-            screen_height() / 2.,
+            format!("TDPL example! fps:{}", fps_val).as_str(),
+            screen_width() - 275.0,
+            screen_height() - 30.,
             30.,
             WHITE,
         );

@@ -1,5 +1,12 @@
+//! # Particle Sys
+//!
+//! Contains the trait definition for ParticleSys, a system
+//! of particles.
+
 use std::slice::{Iter, IterMut};
 
+/// Defines how to interact with a system of particles within
+/// the `tdpl` library.
 pub trait ParticleSys {
     type T;
 

@@ -4,6 +4,7 @@
 
 use macroquad::color::Color;
 use macroquad::math::Vec3;
+use macroquad::prelude::get_fps;
 use rand::rngs::ThreadRng;
 use rand::{rng, Rng};
 use std::slice::{Iter, IterMut};
@@ -188,7 +189,8 @@ impl ParticleSys for LinearParticles {
 
         let gen_flag = map_float_value(&self.densities, current_time, self.period)?;
         if self.should_generate(gen_flag) {
-            let p = Particle::new(
+            let nft = 1.2 / get_fps() as f32;
+            let p = Particle::new_line(
                 map_location(
                     &self.locations,
                     self.start_location,
@@ -196,27 +198,29 @@ impl ParticleSys for LinearParticles {
                     current_time,
                     self.period,
                 )?,
+                map_location(
+                    &self.locations,
+                    self.start_location,
+                    self.end_location,
+                    current_time+nft,
+                    self.period,
+                )?,
                 map_color_value(&self.colors, current_time, self.period)?,
-                map_float_value(&self.sizes, current_time, self.period)?,
                 self.decay,
                 true,
             );
             self.particles.push(p);
         }
-
-        for p in self.particles.iter_mut() {
-            (*p).draw();
-        }
-        self.particles.retain(|&p| !p.is_finished());
+        self.particles.retain_mut(|p| !(*p).draw());
 
         Ok(self.start_time.elapsed().as_secs_f32() <= self.period)
     }
 
-    fn iter(&self) -> Iter<'_, Particle> {
+    fn iter(&self) -> Iter<'_, Self::T> {
         self.particles.iter()
     }
 
-    fn iter_mut(&mut self) -> IterMut<'_, Particle> {
+    fn iter_mut(&mut self) -> IterMut<'_, Self::T> {
         self.particles.iter_mut()
     }
 }
@@ -236,6 +240,9 @@ impl Default for LinearParticles {
 pub struct LinearGrp {
     pub period: f32,
     linear_particles: Vec<LinearParticles>,
+    active: bool,
+    looping: bool,
+    initialized: bool,
     start_time: Instant,
 }
 
@@ -246,6 +253,9 @@ impl LinearGrp {
             period,
             linear_particles: linparts.into(),
             start_time: Instant::now(),
+            active: false,
+            looping: false,
+            initialized: false,
         }
     }
 
@@ -256,6 +266,91 @@ impl LinearGrp {
     pub fn with_period(mut self, p: f32) -> Self {
         self.period = p;
         self
+    }
+
+    pub fn with_systems(mut self, linparts: &[LinearParticles]) -> Self {
+        self.linear_particles = linparts.into();
+        self
+    }
+}
+
+impl ParticleSys for LinearGrp {
+    type T = LinearParticles;
+
+    fn is_active(&self) -> bool {
+        self.active
+    }
+
+    fn is_looping(&self) -> bool {
+        self.active && self.looping
+    }
+
+    fn is_initialized(&mut self) -> bool {
+        self.initialized
+    }
+
+    fn start_loop(&mut self) -> Result<(), String> {
+        self.setup(true)
+    }
+
+    fn start(&mut self) -> Result<(), String> {
+        self.setup(false)
+    }
+
+    fn stop(&mut self) {
+        self.tear_down();
+    }
+
+    fn reset_time(&mut self) {
+        self.start_time = Instant::now();
+    }
+
+    fn elapsed_time(&mut self) -> Option<f32> {
+        Some(self.start_time.elapsed().as_secs_f32())
+    }
+
+    fn setup(&mut self, should_loop: bool) -> Result<(), String> {
+        check_period(self.period)?;
+        for ps in self.linear_particles.iter_mut() {
+            ps.period = self.period;
+            ps.setup(should_loop)?;
+        }
+
+        self.looping = should_loop;
+        self.active = true;
+        self.initialized = true;
+        self.reset_time();
+        Ok(())
+    }
+
+    fn tear_down(&mut self) {
+        for ps in self.linear_particles.iter_mut() {
+            ps.tear_down();
+        }
+
+        self.active = false;
+        self.initialized = false;
+    }
+
+    fn next_frame(&mut self, time: Option<f32>) -> Result<bool, String> {
+        let current_time = match time {
+            None => Some(self.start_time.elapsed().as_secs_f32()),
+            v => v,
+        };
+
+        for ps in self.linear_particles.iter_mut() {
+            ps.next_frame(current_time)?;
+        }
+
+        Ok(self.start_time.elapsed().as_secs_f32() <= self.period)
+    }
+
+    fn iter(&self) -> Iter<'_, Self::T> {
+        self.linear_particles.iter()
+    }
+
+    fn iter_mut(&mut self) -> IterMut<'_, Self::T> {
+        self.linear_particles.iter_mut()
     }
 }
 

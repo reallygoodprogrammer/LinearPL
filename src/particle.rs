@@ -2,22 +2,21 @@
 //!
 //! Data structure and implementation for a single point
 //! particle. Particles aren't intended to be created singularly
-//! but rather used within a LinearParticles, PlanarParticles, or
-//! SpatialParticles object.
+//! but rather used within a proper object implementing ParticleSys.
 
 use macroquad::color::Color;
 use macroquad::math::Vec3;
-use macroquad::prelude::draw_cube;
-use std::time::{Duration, Instant};
+use macroquad::prelude::draw_line_3d;
+use std::time::Instant;
 
 /// Single Particle struct. Contains the `location`, `color`, and
 /// `size` of the Particle.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Particle {
     location: Vec3,
+    end_location: Vec3,
     color: Color,
-    size: f32,
-    length: Duration,
+    length: f32,
     sloped: bool,
     start_time: Instant,
 }
@@ -29,14 +28,36 @@ impl Particle {
         (x, y, z): (f32, f32, f32),
         (r, g, b, a): (f32, f32, f32, f32),
         size: f32,
-        l: f32,
+        length: f32,
+        sloped: bool,
+    ) -> Self {
+        let l = Vec3::new(x, y, z);
+        let el = l + Vec3::splat(size);
+        Particle {
+            location: l,
+            end_location: el,
+            color: Color::new(r, g, b, a),
+            length,
+            sloped,
+            start_time: Instant::now(),
+        }
+    }
+
+    /// Instantiate a new Particle at `(x, y, z)` location
+    /// and ending location `(x, y, z)` with `(r, g, b, a)` color,
+    /// length `l`.
+    pub fn new_line(
+        (x, y, z): (f32, f32, f32),
+        (xe, ye, ze): (f32, f32, f32),
+        (r, g, b, a): (f32, f32, f32, f32),
+        length: f32,
         sloped: bool,
     ) -> Self {
         Particle {
             location: Vec3::new(x, y, z),
+            end_location: Vec3::new(xe, ye, ze),
             color: Color::new(r, g, b, a),
-            size,
-            length: Duration::from_millis((l * 1000.) as u64),
+            length,
             sloped,
             start_time: Instant::now(),
         }
@@ -72,28 +93,26 @@ impl Particle {
         self.color = Color::new(r, g, b, a);
     }
 
-    /// Set the size of the particle to `s` argument.
+    /// Draw the Particle within the macroquad world coords. Returns
+    /// `true` if Particle has surpassed its length, else `false`.
     #[inline]
-    pub fn set_size(&mut self, s: f32) {
-        self.size = s;
-    }
-
-    /// Draw the Particle within the macroquad world coords.
-    #[inline]
-    pub fn draw(&mut self) {
-        draw_cube(self.location, Vec3::splat(self.size), None, self.color);
+    pub fn draw(&mut self) -> bool {
+        let current_time = self.start_time.elapsed().as_secs_f32();
         if self.sloped {
-            self.color.r /= 2.;
-            self.color.g /= 2.;
-            self.color.b /= 2.;
-            self.color.a /= 2.;
+            let color = map_color_decay(self.color, current_time, self.length);
+            draw_line_3d(
+                self.location, 
+                self.end_location,
+                color
+                );
+        } else {
+            draw_line_3d(
+                self.location, 
+                self.end_location,
+                self.color
+                );
         }
-    }
-
-    /// Check if the Particle has finished its lifetime
-    #[inline]
-    pub fn is_finished(&self) -> bool {
-        self.start_time.elapsed() > self.length
+        current_time > self.length
     }
 
     /// Reset the ellapsed time for the Particle object
@@ -106,4 +125,8 @@ impl Default for Particle {
     fn default() -> Self {
         Particle::new((0., 0., 0.), (0., 0., 0., 1.), 0.01, 1., false)
     }
+}
+
+fn map_color_decay(orig: Color, current: f32, total: f32) -> Color {
+    Color::new(orig.r, orig.g, orig.b, orig.a * (1.0 - (current / total)))
 }
