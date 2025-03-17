@@ -1,7 +1,21 @@
-//! # Particle Sys
+//! # ParticleSys Trait
 //!
 //! Contains the trait definition for ParticleSys, a system
-//! of particles.
+//! of particles. This is the bread and butter of `tdpl` as it
+//! acts as the main api for interacting with the libraries different
+//! forms of particle systems.
+//!
+//! Generally, an object implementing `ParticleSys` would be used by
+//! defining its settings and parameters through its own implementation,
+//! then calling either `start()` or `start_loop()` to setup the system
+//! for particle generation. The user should call `run()` each frame that
+//! they desire the particle system to be displayed, which will return
+//! `false` once the ParticleSys object has finished if it was started
+//! with `start()`.
+//!
+//! While there are a lot of methods that are required to be implemented,
+//! implementing this trait allows for a struct to reside in Systems of
+//! Particle Systems allowing for more complex animations and patterns.
 
 use std::slice::{Iter, IterMut};
 
@@ -34,7 +48,8 @@ pub trait ParticleSys {
     fn elapsed_time(&mut self) -> Option<f32>;
 
     /// Set up the ParticleSys such that it is ready to be
-    /// displayed.
+    /// displayed. This function isn't intended to be called by the user
+    /// but by other trait methods.
     ///
     /// The implementor is in charge of making sure that this
     /// operation will result in `is_active()` and `is_initialized()`
@@ -43,14 +58,16 @@ pub trait ParticleSys {
 
     /// Tear down the ParticleSys such that `is_active()` and `is_initialized()`
     /// return false and any other resetting of variables necessary for
-    /// the ParticleSys to be able to call `setup()`.
+    /// the ParticleSys to be able to call `setup()`. This function isn't
+    /// intended to be called by the user, but by other trait methods.
     ///
     /// This is equivalent to calling the `stop()` method for this trait.
     fn tear_down(&mut self);
 
     /// Display the next frame of the ParticleSys Particles with
     /// elapsed time `time` if `Some(time)`, else the ParticleSys own
-    /// counting mechanism.
+    /// counting mechanism. This function isn't intended to be called by
+    /// the user, but by the trait's `run` method.
     ///
     /// # Returns
     ///
@@ -96,7 +113,7 @@ pub trait ParticleSys {
     /// - `Ok(false)` otherwise
     fn run(&mut self) -> Result<bool, String> {
         if !(self.is_active() && self.is_initialized()) {
-            return Err("object has not been setup for display call".into());
+            return Err("object has not been setup yet for running".into());
         }
         let elapsed = self.elapsed_time();
         if !self.next_frame(elapsed)? {

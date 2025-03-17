@@ -1,7 +1,10 @@
-//! # Groups
+//! # Groups of Particles
 //!
 //! Defines different groups of particle systems synced
-//! in different ways.
+//! in different ways. All of these groups main functionality
+//! is handled by the `ParticleSys` trait and it is recommended
+//! to review documentation for it to learn how to interact with
+//! these objects fully.
 
 use std::slice::{Iter, IterMut};
 use std::time::Instant;
@@ -127,4 +130,17 @@ impl<P: ParticleSys + std::clone::Clone> Default for SyncGrp<P> {
     fn default() -> Self {
         SyncGrp::new(1.0, &[])
     }
+}
+
+/// Group of objects implementing ParticleSys that are
+/// ran sequentially from the order they are defined within
+/// the argument `parts`, each with the period defined
+/// in the SeqGrp `period` value.
+pub struct SeqGrp<P: ParticleSys> {
+    pub period: f32,
+    parts: Vec<P>,
+    start_time: Instant,
+    active: bool,
+    looping: bool,
+    initialized: bool,
 }

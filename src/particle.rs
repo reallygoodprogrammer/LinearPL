@@ -1,8 +1,12 @@
-//! # Particle
+//! # Single Particle
 //!
 //! Data structure and implementation for a single point
 //! particle. Particles aren't intended to be created singularly
 //! but rather used within a proper object implementing ParticleSys.
+//!
+//! If you are wanting to implement your own struct with the
+//! ParticleSys trait such that it generates visible particles
+//! itself, you should use the `Particles` struct defined in this module.
 
 use macroquad::color::Color;
 use macroquad::math::Vec3;
@@ -13,8 +17,16 @@ use std::time::Instant;
 use crate::particle_sys::ParticleSys;
 use crate::util::map_color_decay;
 
-/// Single Particle struct. Contains the `location`, `color`, and
-/// `size` of the Particle.
+/// Single Particle struct. Contains the `location` and `color`.
+/// Because `macroquad` does not support 3 dimensional points
+/// or single pixels, a `Particle` is implemented as a small
+/// line. This is why it contains the `end_location` member, as
+/// it is used as the ending point of the line.
+///
+/// This design choice can be embraced fully when creating a particle
+/// system that operates on a continuous line by setting the `end_location`
+/// somewhere near the the next point of the particle system to imitate
+/// continuity.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Particle {
     location: Vec3,
@@ -28,6 +40,8 @@ pub struct Particle {
 impl Particle {
     /// Instantiate a new Particle at `(x, y, z)` location
     /// with `(r, g, b, a)` color and `s` size, length `l`.
+    /// `sloped` determines if the particle's opacity fades
+    /// out or not.
     pub fn new(
         (x, y, z): (f32, f32, f32),
         (r, g, b, a): (f32, f32, f32, f32),
@@ -49,7 +63,8 @@ impl Particle {
 
     /// Instantiate a new Particle at `(x, y, z)` location
     /// and ending location `(x, y, z)` with `(r, g, b, a)` color,
-    /// length `l`.
+    /// length `l`. `sloped` determines if the particle's opacity fades
+    /// out or not.
     pub fn new_line(
         (x, y, z): (f32, f32, f32),
         (xe, ye, ze): (f32, f32, f32),

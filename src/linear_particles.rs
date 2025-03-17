@@ -1,6 +1,11 @@
-//! # LinearParticles
+//! # LinearParticles and LinearGrp
 //!
 //! Particle system generated along a single straight line.
+//!
+//! Typically, the main functionality besides defining the parameters
+//! of these Particle Systems is held within the `tdpl::particle_sys::ParticleSys`
+//! trait. It's recommended to look at the documentation for `ParticleSys`
+//! before using this module.
 
 use macroquad::color::Color;
 use macroquad::math::Vec3;
@@ -22,9 +27,10 @@ use crate::util::{
 // ***************************************
 
 /// LinearParticle system. User should be in charge of setting
-/// appropriate `locations`, `densities`, `colors`, `sizes`
+/// appropriate `locations`, `densities`, and `colors`
 /// such that their values are interpolated over the defined `period`
-/// in seconds through provided methods.
+/// in seconds. `decay` refers to the amount of time the particles
+/// generated stay visible.
 #[derive(Debug, Clone)]
 pub struct LinearParticles {
     particles: Vec<Particle>,
@@ -227,6 +233,7 @@ impl Default for LinearParticles {
 /// Group of LinearParticles objects with a synced period and
 /// start time. This is similar to `tdpl::groups::SyncGrp` but
 /// only allowed to contain LinearParticles objects.
+#[derive(Debug, Clone)]
 pub struct LinearGrp {
     pub period: f32,
     linear_particles: Vec<LinearParticles>,
