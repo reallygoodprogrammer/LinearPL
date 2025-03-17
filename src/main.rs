@@ -5,7 +5,7 @@
 
 use macroquad::prelude::*;
 
-use tdpl::groups::SyncGrp;
+use tdpl::groups::{SeqGrp, SyncGrp};
 use tdpl::linear_particles::LinearParticles;
 use tdpl::particle::Particle;
 use tdpl::particle_sys::ParticleSys;
@@ -36,9 +36,9 @@ async fn main() -> Result<(), String> {
     // **********************************
 
     // some static particles
-    let mut static_part1 = Particle::new((-0.2, 1., 4.), (0., 1., 1., 1.), 0.01, 1., false);
-    let mut static_part2 = Particle::new((0., 1., 4.), (0., 1., 0., 1.), 0.01, 1., false);
-    let mut static_part3 = Particle::new((0.2, 1., 4.), (1., 0., 0., 1.), 0.01, 1., false);
+    let mut static_part1 = Particle::new((-0.2, 1., 4.), (0., 1., 1., 1.), 0.005, 1., false);
+    let mut static_part2 = Particle::new((0., 1., 4.), (0., 1., 0., 1.), 0.005, 1., false);
+    let mut static_part3 = Particle::new((0.2, 1., 4.), (1., 0., 0., 1.), 0.005, 1., false);
 
     // some linear particle systems
     let lin_part_h = LinearParticles::new((-1., 0., 3.).into(), (1., 0., 3.).into())
@@ -59,7 +59,6 @@ async fn main() -> Result<(), String> {
     let mut linear_grp = SyncGrp::new(
         3.,
         &[
-            lin_part_h.clone(),
             lin_part_h
                 .clone()
                 .with_start_end(vec3(1., 0., 5.), vec3(-1., 0., 5.)),
@@ -91,6 +90,44 @@ async fn main() -> Result<(), String> {
             lin_part_v
                 .clone()
                 .with_start_end(vec3(-1., 0., 5.), vec3(-1., 2., 5.)),
+            lin_part_h,
+        ],
+    );
+
+    let lil_lin_part = LinearParticles::new((-0.75, 0.25, 3.25).into(), (-0.75, 1.75, 3.25).into())
+        .with_decay(0.3)
+        .with_locations(&[1., 1., 0.5, 0., 0.])
+        .with_colors(&[SKYBLUE, GREEN]);
+
+    let mut linear_seq = SeqGrp::new(
+        10.,
+        &[
+            lil_lin_part
+                .clone()
+                .with_colors(&[GREEN, SKYBLUE])
+                .with_start_end((-0.75, 1.75, 3.25).into(), (0.75, 0.25, 4.75).into()),
+            lil_lin_part
+                .clone()
+                .with_start_end((0.75, 0.25, 4.75).into(), (0.75, 1.75, 4.75).into()),
+            lil_lin_part
+                .clone()
+                .with_colors(&[GREEN, SKYBLUE])
+                .with_start_end((0.75, 1.75, 4.75).into(), (0.75, 0.25, 3.25).into()),
+            lil_lin_part
+                .clone()
+                .with_start_end((0.75, 0.25, 3.25).into(), (0.75, 1.75, 3.25).into()),
+            lil_lin_part
+                .clone()
+                .with_colors(&[GREEN, SKYBLUE])
+                .with_start_end((0.75, 1.75, 3.25).into(), (-0.75, 0.25, 4.75).into()),
+            lil_lin_part
+                .clone()
+                .with_start_end((-0.75, 0.25, 4.75).into(), (-0.75, 1.75, 4.75).into()),
+            lil_lin_part
+                .clone()
+                .with_colors(&[GREEN, SKYBLUE])
+                .with_start_end((-0.75, 1.75, 4.75).into(), (-0.75, 0.25, 3.25).into()),
+            lil_lin_part,
         ],
     );
 
@@ -98,13 +135,14 @@ async fn main() -> Result<(), String> {
         eprintln!("linear_grp received error at startup: {:?}", v);
     };
 
+    if let Err(v) = linear_seq.start_loop() {
+        eprintln!("linear_grp received error at startup: {:?}", v);
+    };
+
     // **********************************
     // END HERE
     // **********************************
 
-    let fps_reset = 100;
-    let mut fps_counter = 0;
-    let mut fps_val = 0;
     loop {
         if is_key_pressed(KeyCode::Escape) {
             break;
@@ -151,6 +189,7 @@ async fn main() -> Result<(), String> {
 
         // draw the group of linear particle systems
         linear_grp.run()?;
+        linear_seq.run()?;
 
         // **********************************
         // END HERE
@@ -161,16 +200,10 @@ async fn main() -> Result<(), String> {
         draw_cube_wires(vec3(0., 4., 0.), vec3(2., 2., 2.), YELLOW);
         draw_cube_wires(vec3(0., 1., -4.), vec3(2., 2., 2.), ORANGE);
 
-        fps_counter += 1;
-        if fps_counter % fps_reset == 0 {
-            fps_counter = 0;
-            fps_val = get_fps();
-        }
-
         set_default_camera();
         draw_text(
-            format!("TDPL example! fps:{}", fps_val).as_str(),
-            screen_width() - 275.0,
+            "\\(^O^)/ TDPL",
+            screen_width() - 200.0,
             screen_height() - 30.,
             30.,
             WHITE,

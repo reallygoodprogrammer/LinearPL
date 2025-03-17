@@ -146,7 +146,7 @@ impl ParticleSys for LinearParticles {
     fn setup(&mut self, should_loop: bool, p: Option<f32>) -> Result<(), String> {
         self.period = match p {
             Some(p) => {
-                check_period(self.period)?;
+                check_period(p)?;
                 p
             }
             None => self.period,
@@ -179,7 +179,7 @@ impl ParticleSys for LinearParticles {
 
         let gen_flag = map_float_value(&self.densities, current_time, self.period)?;
         if self.should_generate(gen_flag) {
-            let nft = 1.2 / get_fps() as f32;
+            let nft = 4.0 / get_fps() as f32;
             let p = Particle::new_line(
                 map_location(
                     &self.locations,
@@ -289,7 +289,7 @@ impl ParticleSys for LinearGrp {
     fn setup(&mut self, should_loop: bool, p: Option<f32>) -> Result<(), String> {
         self.period = match p {
             Some(p) => {
-                check_period(self.period)?;
+                check_period(p)?;
                 p
             }
             None => self.period,
