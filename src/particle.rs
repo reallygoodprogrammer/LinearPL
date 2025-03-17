@@ -7,7 +7,11 @@
 use macroquad::color::Color;
 use macroquad::math::Vec3;
 use macroquad::prelude::draw_line_3d;
+use std::slice::{Iter, IterMut};
 use std::time::Instant;
+
+use crate::particle_sys::ParticleSys;
+use crate::util::map_color_decay;
 
 /// Single Particle struct. Contains the `location`, `color`, and
 /// `size` of the Particle.
@@ -100,17 +104,9 @@ impl Particle {
         let current_time = self.start_time.elapsed().as_secs_f32();
         if self.sloped {
             let color = map_color_decay(self.color, current_time, self.length);
-            draw_line_3d(
-                self.location, 
-                self.end_location,
-                color
-                );
+            draw_line_3d(self.location, self.end_location, color);
         } else {
-            draw_line_3d(
-                self.location, 
-                self.end_location,
-                self.color
-                );
+            draw_line_3d(self.location, self.end_location, self.color);
         }
         current_time > self.length
     }
@@ -121,12 +117,56 @@ impl Particle {
     }
 }
 
+impl ParticleSys for Particle {
+    type T = Particle;
+
+    fn is_active(&self) -> bool {
+        true
+    }
+
+    fn is_looping(&self) -> bool {
+        false
+    }
+
+    fn is_initialized(&mut self) -> bool {
+        true
+    }
+
+    fn reset_time(&mut self) {
+        self.reset()
+    }
+
+    fn elapsed_time(&mut self) -> Option<f32> {
+        Some(self.start_time.elapsed().as_secs_f32())
+    }
+
+    fn setup(&mut self, _should_loop: bool, _p: Option<f32>) -> Result<(), String> {
+        self.reset();
+        Ok(())
+    }
+
+    fn tear_down(&mut self) {}
+
+    fn next_frame(&mut self, _time: Option<f32>) -> Result<bool, String> {
+        Ok(self.draw())
+    }
+
+    fn iter(&self) -> Option<Iter<'_, Self::T>> {
+        None
+    }
+
+    fn iter_mut(&mut self) -> Option<IterMut<'_, Self::T>> {
+        None
+    }
+
+    fn with_period(mut self, p: f32) -> Self {
+        self.length = p;
+        self
+    }
+}
+
 impl Default for Particle {
     fn default() -> Self {
         Particle::new((0., 0., 0.), (0., 0., 0., 1.), 0.01, 1., false)
     }
-}
-
-fn map_color_decay(orig: Color, current: f32, total: f32) -> Color {
-    Color::new(orig.r, orig.g, orig.b, orig.a * (1.0 - (current / total)))
 }

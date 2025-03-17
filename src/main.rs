@@ -5,7 +5,8 @@
 
 use macroquad::prelude::*;
 
-use tdpl::linear_particles::{LinearGrp, LinearParticles};
+use tdpl::groups::SyncGrp;
+use tdpl::linear_particles::LinearParticles;
 use tdpl::particle::Particle;
 use tdpl::particle_sys::ParticleSys;
 
@@ -55,7 +56,7 @@ async fn main() -> Result<(), String> {
         .with_decay(2.0)
         .with_locations(&[1., 0., 1.])
         .with_colors(&[PINK, PURPLE, RED, VIOLET]);
-    let mut linear_grp = LinearGrp::new(
+    let mut linear_grp = SyncGrp::new(
         3.,
         &[
             lin_part_h.clone(),

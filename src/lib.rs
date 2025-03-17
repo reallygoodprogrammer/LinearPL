@@ -3,6 +3,9 @@
 //! Library for creating particle based effects alongside
 //! the macroquad graphics library for rust.
 
+mod util;
+
+pub mod groups;
 pub mod linear_particles;
 pub mod particle;
 pub mod particle_sys;

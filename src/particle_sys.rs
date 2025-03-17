@@ -8,7 +8,7 @@ use std::slice::{Iter, IterMut};
 /// Defines how to interact with a system of particles within
 /// the `tdpl` library.
 pub trait ParticleSys {
-    type T;
+    type T: ParticleSys;
 
     /// Check if ParticleSys is active.
     /// Returns `true` if ParticleSys is in active state. Else `false`.
@@ -39,7 +39,7 @@ pub trait ParticleSys {
     /// The implementor is in charge of making sure that this
     /// operation will result in `is_active()` and `is_initialized()`
     /// calls returning true.
-    fn setup(&mut self, should_loop: bool) -> Result<(), String>;
+    fn setup(&mut self, should_loop: bool, p: Option<f32>) -> Result<(), String>;
 
     /// Tear down the ParticleSys such that `is_active()` and `is_initialized()`
     /// return false and any other resetting of variables necessary for
@@ -63,20 +63,23 @@ pub trait ParticleSys {
 
     /// Return an Iterator over the Particle Pieces managed by the
     /// ParticleSys.
-    fn iter(&self) -> Iter<'_, Self::T>;
+    fn iter(&self) -> Option<Iter<'_, Self::T>>;
 
     /// Return a Mutable Iterator over the Particle Pieces managed by
     /// the ParticleSys.
-    fn iter_mut(&mut self) -> IterMut<'_, Self::T>;
+    fn iter_mut(&mut self) -> Option<IterMut<'_, Self::T>>;
+
+    /// Returns self with period `p`.
+    fn with_period(self, p: f32) -> Self;
 
     /// Set up ParticleSys into its looping active state.
     fn start_loop(&mut self) -> Result<(), String> {
-        self.setup(true)
+        self.setup(true, None)
     }
 
     /// Set up ParticleSys into its active state.
     fn start(&mut self) -> Result<(), String> {
-        self.setup(false)
+        self.setup(false, None)
     }
 
     /// Tear down and deactivate ParticleSys object.
