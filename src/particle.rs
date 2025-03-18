@@ -15,7 +15,7 @@ use std::slice::{Iter, IterMut};
 use std::time::Instant;
 
 use crate::particle_sys::ParticleSys;
-use crate::util::map_color_decay;
+use crate::util::{check_period, map_color_decay};
 
 /// Single Particle struct. Contains the `location` and `color`.
 /// Because `macroquad` does not support 3 dimensional points
@@ -174,9 +174,10 @@ impl ParticleSys for Particle {
         None
     }
 
-    fn with_period(mut self, p: f32) -> Self {
+    fn with_period(mut self, p: f32) -> Result<Self, String> {
+        check_period(p)?;
         self.length = p;
-        self
+        Ok(self)
     }
 }
 

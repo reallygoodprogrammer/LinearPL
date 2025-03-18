@@ -36,11 +36,11 @@ pub struct LinearParticles {
     particles: Vec<Particle>,
     start_location: Vec3,
     end_location: Vec3,
-    pub locations: Vec<f32>,
-    pub densities: Vec<f32>,
-    pub colors: Vec<Color>,
-    pub period: f32,
-    pub decay: f32,
+    locations: Vec<f32>,
+    densities: Vec<f32>,
+    colors: Vec<Color>,
+    period: f32,
+    decay: f32,
     initialized: bool,
     looping: bool,
     active: bool,
@@ -74,42 +74,71 @@ impl LinearParticles {
         chance > self.rand_generator.random_range(0.0..1.0)
     }
 
-    /// Return self with decay `d`.
-    pub fn with_decay(mut self, d: f32) -> Self {
+    /// Return self (consuming it) with decay `d`.
+    pub fn with_decay(mut self, d: f32) -> Result<Self, String> {
+        check_decay(d)?;
         self.decay = d;
-        self
+        Ok(self)
     }
 
-    /// Return self with locations `l`.
-    pub fn with_locations(mut self, l: &[f32]) -> Self {
+    /// Return self (consuming it) with locations `l`.
+    pub fn with_locations(mut self, l: &[f32]) -> Result<Self, String> {
+        check_locations(l)?;
         self.locations = l.into();
-        self
+        Ok(self)
     }
 
-    /// Return self with densities `d`.
-    pub fn with_densities(mut self, d: &[f32]) -> Self {
+    /// Return self (consuming it) with densities `d`.
+    pub fn with_densities(mut self, d: &[f32]) -> Result<Self, String> {
+        check_densities(d)?;
         self.densities = d.into();
-        self
+        Ok(self)
     }
 
-    /// Return self with colors `c`.
-    pub fn with_colors(mut self, c: &[Color]) -> Self {
+    /// Return self (consuming it) with colors `c`.
+    pub fn with_colors(mut self, c: &[Color]) -> Result<Self, String> {
+        check_colors(c)?;
         self.colors = c.into();
-        self
+        Ok(self)
     }
 
-    /// Return self with start-location `sl`.
-    pub fn with_start_end(mut self, sl: Vec3, el: Vec3) -> Self {
+    /// Return self (consuming it) with start-location `sl`, ending location `el.
+    pub fn with_start_end(mut self, sl: Vec3, el: Vec3) -> Result<Self, String> {
         self.start_location = sl;
         self.end_location = el;
-        self
+        Ok(self)
+    }
+
+    /// Return clone of self with decay `d`.
+    pub fn clone_with_decay(&self, d: f32) -> Result<Self, String> {
+        self.clone().with_decay(d)
+    }
+
+    /// Return clone self with locations `l`.
+    pub fn clone_with_locations(&self, l: &[f32]) -> Result<Self, String> {
+        self.clone().with_locations(l)
+    }
+
+    /// Return clone self with densities `d`.
+    pub fn clone_with_densities(&self, d: &[f32]) -> Result<Self, String> {
+        self.clone().with_densities(d)
+    }
+
+    /// Return clone self with colors `c`.
+    pub fn clone_with_colors(&self, c: &[Color]) -> Result<Self, String> {
+        self.clone().with_colors(c)
+    }
+
+    /// Return clone self with start-location `sl`, ending location `el`.
+    pub fn clone_with_start_end(&self, sl: Vec3, el: Vec3) -> Result<Self, String> {
+        self.clone().with_start_end(sl, el)
     }
 
     /// Reverse the LinearParticles `locations`, `sizes`, `densities`, `colors`,
     /// `start_location`, `end_location`, such that the presets defined for each
     /// would create a reverse of the original graphic generated. This function
     /// does not reset the elapsed time of the object.
-    pub fn reverse(&mut self) {
+    pub fn reversed(mut self) {
         std::mem::swap(&mut self.start_location, &mut self.end_location);
         self.locations.reverse();
         self.densities.reverse();
@@ -151,12 +180,6 @@ impl ParticleSys for LinearParticles {
             }
             None => self.period,
         };
-
-        check_densities(&self.densities)?;
-        check_locations(&self.locations)?;
-        check_colors(&self.colors)?;
-        check_period(self.period)?;
-        check_decay(self.decay)?;
 
         self.particles.clear();
         self.looping = should_loop;
@@ -214,9 +237,10 @@ impl ParticleSys for LinearParticles {
         Some(self.particles.iter_mut())
     }
 
-    fn with_period(mut self, p: f32) -> Self {
+    fn with_period(mut self, p: f32) -> Result<Self, String> {
+        check_period(p)?;
         self.period = p;
-        self
+        Ok(self)
     }
 }
 
@@ -336,9 +360,10 @@ impl ParticleSys for LinearGrp {
         Some(self.linear_particles.iter_mut())
     }
 
-    fn with_period(mut self, p: f32) -> Self {
+    fn with_period(mut self, p: f32) -> Result<Self, String> {
+        check_period(p)?;
         self.period = p;
-        self
+        Ok(self)
     }
 }
 

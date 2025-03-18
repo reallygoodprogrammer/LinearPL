@@ -87,7 +87,9 @@ pub trait ParticleSys {
     fn iter_mut(&mut self) -> Option<IterMut<'_, Self::T>>;
 
     /// Returns self with period `p`.
-    fn with_period(self, p: f32) -> Self;
+    fn with_period(self, p: f32) -> Result<Self, String>
+    where
+        Self: Sized;
 
     /// Set up ParticleSys into its looping active state.
     fn start_loop(&mut self) -> Result<(), String> {

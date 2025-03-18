@@ -1,7 +1,7 @@
 //! # TDPL Example
 //!
-//! Crate for creating static_part1icle based effects along with
-//! the macroquad rust crate.
+//! Crate for creating particle systems alongside
+//! the macroquad crate.
 
 use macroquad::prelude::*;
 
@@ -23,12 +23,9 @@ async fn main() -> Result<(), String> {
 
     let mut u_front =
         vec3(hrot.cos() * vrot.cos(), vrot.sin(), hrot.sin() * vrot.cos()).normalize();
-
-    // right and up from user perspective
     let mut u_right = u_front.cross(up).normalize();
     let mut u_up = u_right.cross(u_front).normalize();
 
-    // mouse is pressed flag
     let mut mouse_pressed = false;
 
     // **********************************
@@ -41,92 +38,67 @@ async fn main() -> Result<(), String> {
     let mut static_part3 = Particle::new((0.2, 1., 4.), (1., 0., 0., 1.), 0.005, 1., false);
 
     // some linear particle systems
-    let lin_part_h = LinearParticles::new((-1., 0., 3.).into(), (1., 0., 3.).into())
-        .with_decay(1.4)
-        .with_locations(&[0., 0., 1., 1.])
-        .with_colors(&[
-            Color::new(0., 1., 1., 0.),
-            Color::new(0., 1., 1., 0.),
-            Color::new(0., 0.75, 1., 1.),
-            Color::new(0., 0.25, 1., 1.),
-            Color::new(0., 0., 1., 0.),
-            Color::new(0., 0., 1., 0.),
-        ]);
-    let lin_part_v = LinearParticles::new((-1., 0., 3.).into(), (-1., 2., 3.).into())
-        .with_decay(2.0)
-        .with_locations(&[1., 0., 1.])
-        .with_colors(&[PINK, PURPLE, RED, VIOLET]);
+    let lin_part_h: LinearParticles =
+        LinearParticles::new((-1., 0., 3.).into(), (1., 0., 3.).into())
+            .with_decay(1.4)?
+            .with_locations(&[0., 0., 1., 1.])?
+            .with_colors(&[
+                Color::new(0., 1., 1., 0.),
+                Color::new(0., 1., 1., 0.),
+                Color::new(0., 0.75, 1., 1.),
+                Color::new(0., 0.25, 1., 1.),
+                Color::new(0., 0., 1., 0.),
+                Color::new(0., 0., 1., 0.),
+            ])?;
+    let lin_part_v: LinearParticles =
+        LinearParticles::new((-1., 0., 3.).into(), (-1., 2., 3.).into())
+            .with_decay(2.0)?
+            .with_locations(&[1., 0., 1.])?
+            .with_colors(&[PINK, PURPLE, RED, VIOLET])?;
     let mut linear_grp = SyncGrp::new(
         3.,
         &[
-            lin_part_h
-                .clone()
-                .with_start_end(vec3(1., 0., 5.), vec3(-1., 0., 5.)),
-            lin_part_h
-                .clone()
-                .with_start_end(vec3(-1., 2., 3.), vec3(1., 2., 3.)),
-            lin_part_h
-                .clone()
-                .with_start_end(vec3(1., 2., 5.), vec3(-1., 2., 5.)),
-            lin_part_h
-                .clone()
-                .with_start_end(vec3(-1., 0., 5.), vec3(-1., 0., 3.)),
-            lin_part_h
-                .clone()
-                .with_start_end(vec3(1., 0., 3.), vec3(1., 0., 5.)),
-            lin_part_h
-                .clone()
-                .with_start_end(vec3(-1., 2., 5.), vec3(-1., 2., 3.)),
-            lin_part_h
-                .clone()
-                .with_start_end(vec3(1., 2., 3.), vec3(1., 2., 5.)),
-            lin_part_v.clone(),
-            lin_part_v
-                .clone()
-                .with_start_end(vec3(1., 0., 3.), vec3(1., 2., 3.)),
-            lin_part_v
-                .clone()
-                .with_start_end(vec3(1., 0., 5.), vec3(1., 2., 5.)),
-            lin_part_v
-                .clone()
-                .with_start_end(vec3(-1., 0., 5.), vec3(-1., 2., 5.)),
+            lin_part_h.clone_with_start_end(vec3(1., 0., 5.), vec3(-1., 0., 5.))?,
+            lin_part_h.clone_with_start_end(vec3(-1., 2., 3.), vec3(1., 2., 3.))?,
+            lin_part_h.clone_with_start_end(vec3(1., 2., 5.), vec3(-1., 2., 5.))?,
+            lin_part_h.clone_with_start_end(vec3(-1., 0., 5.), vec3(-1., 0., 3.))?,
+            lin_part_h.clone_with_start_end(vec3(1., 0., 3.), vec3(1., 0., 5.))?,
+            lin_part_h.clone_with_start_end(vec3(-1., 2., 5.), vec3(-1., 2., 3.))?,
+            lin_part_h.clone_with_start_end(vec3(1., 2., 3.), vec3(1., 2., 5.))?,
             lin_part_h,
+            lin_part_v.clone_with_start_end(vec3(1., 0., 3.), vec3(1., 2., 3.))?,
+            lin_part_v.clone_with_start_end(vec3(1., 0., 5.), vec3(1., 2., 5.))?,
+            lin_part_v.clone_with_start_end(vec3(-1., 0., 5.), vec3(-1., 2., 5.))?,
+            lin_part_v,
         ],
     );
 
     let lil_lin_part = LinearParticles::new((-0.75, 0.25, 3.25).into(), (-0.75, 1.75, 3.25).into())
-        .with_decay(0.3)
-        .with_locations(&[1., 1., 0.5, 0., 0.])
-        .with_colors(&[SKYBLUE, GREEN]);
+        .with_decay(0.35)?
+        .with_locations(&[1., 1., 0.5, 0., 0.])?
+        .with_colors(&[SKYBLUE, GREEN])?;
 
     let mut linear_seq = SeqGrp::new(
-        10.,
+        7.,
         &[
             lil_lin_part
-                .clone()
-                .with_colors(&[GREEN, SKYBLUE])
-                .with_start_end((-0.75, 1.75, 3.25).into(), (0.75, 0.25, 4.75).into()),
+                .clone_with_colors(&[GREEN, SKYBLUE])?
+                .with_start_end((-0.75, 1.75, 3.25).into(), (0.75, 0.25, 4.75).into())?,
             lil_lin_part
-                .clone()
-                .with_start_end((0.75, 0.25, 4.75).into(), (0.75, 1.75, 4.75).into()),
+                .clone_with_start_end((0.75, 0.25, 4.75).into(), (0.75, 1.75, 4.75).into())?,
             lil_lin_part
-                .clone()
-                .with_colors(&[GREEN, SKYBLUE])
-                .with_start_end((0.75, 1.75, 4.75).into(), (0.75, 0.25, 3.25).into()),
+                .clone_with_colors(&[GREEN, SKYBLUE])?
+                .with_start_end((0.75, 1.75, 4.75).into(), (0.75, 0.25, 3.25).into())?,
             lil_lin_part
-                .clone()
-                .with_start_end((0.75, 0.25, 3.25).into(), (0.75, 1.75, 3.25).into()),
+                .clone_with_start_end((0.75, 0.25, 3.25).into(), (0.75, 1.75, 3.25).into())?,
             lil_lin_part
-                .clone()
-                .with_colors(&[GREEN, SKYBLUE])
-                .with_start_end((0.75, 1.75, 3.25).into(), (-0.75, 0.25, 4.75).into()),
+                .clone_with_colors(&[GREEN, SKYBLUE])?
+                .with_start_end((0.75, 1.75, 3.25).into(), (-0.75, 0.25, 4.75).into())?,
             lil_lin_part
-                .clone()
-                .with_start_end((-0.75, 0.25, 4.75).into(), (-0.75, 1.75, 4.75).into()),
+                .clone_with_start_end((-0.75, 0.25, 4.75).into(), (-0.75, 1.75, 4.75).into())?,
             lil_lin_part
-                .clone()
-                .with_colors(&[GREEN, SKYBLUE])
-                .with_start_end((-0.75, 1.75, 4.75).into(), (-0.75, 0.25, 3.25).into()),
+                .clone_with_colors(&[GREEN, SKYBLUE])?
+                .with_start_end((-0.75, 1.75, 4.75).into(), (-0.75, 0.25, 3.25).into())?,
             lil_lin_part,
         ],
     );

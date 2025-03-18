@@ -121,9 +121,10 @@ where
         Some(self.parts.iter_mut())
     }
 
-    fn with_period(mut self, p: f32) -> Self {
+    fn with_period(mut self, p: f32) -> Result<Self, String> {
+        check_period(p)?;
         self.period = p;
-        self
+        Ok(self)
     }
 }
 
@@ -262,7 +263,7 @@ where
                         self.current_part = 0;
                         self.time_offset = 0.;
                         self.reset_time();
-                    },
+                    }
                     false => {
                         return Ok(false);
                     }
@@ -288,9 +289,10 @@ where
         Some(self.parts.iter_mut())
     }
 
-    fn with_period(mut self, p: f32) -> Self {
+    fn with_period(mut self, p: f32) -> Result<Self, String> {
+        check_period(p)?;
         self.period = p;
         self.part_period = p / self.parts.len() as f32;
-        self
+        Ok(self)
     }
 }
