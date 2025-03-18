@@ -59,5 +59,3 @@ pub mod groups;
 pub mod linear_particles;
 pub mod particle;
 pub mod particle_sys;
-//pub mod planar_particles;
-//pub mod spatial_particles;

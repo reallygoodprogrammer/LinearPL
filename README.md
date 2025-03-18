@@ -1,5 +1,8 @@
 # LinearPL
 
+Author: Miles Dustin 
+For Portland State University's cs423 Rust Programming final project.
+
 Fairly straight-forward *Linear Particle Library* for use with
 [macroquad](https://github.com/not-fl3/macroquad) in rust.
 
@@ -52,3 +55,8 @@ library which I haven't done **yet**. With the time I had available, I instead d
 implement a linear particles system along with objects for grouping and syncing particle systems
 I create in the future. I have enjoyed working on this project and may come back and hopefully 
 make it better.
+
+
+### Licensing
+
+MIT License included [here](LICENSE.txt).
