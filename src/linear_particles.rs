@@ -221,7 +221,7 @@ impl ParticleSys for LinearParticles {
                 map_color_value(&self.colors, current_time, self.period)?,
                 self.decay,
                 true,
-            );
+            )?;
             self.particles.push(p);
         }
         self.particles.retain_mut(|p| !(*p).draw());

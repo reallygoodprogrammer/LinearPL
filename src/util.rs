@@ -105,6 +105,22 @@ pub fn map_color_value(
     }
 }
 
+#[test]
+fn map_color_value_test() {
+    let values = vec![
+        Color::new(1.0, 1.0, 1.0, 1.0),
+        Color::new(0.0, 0.0, 0.0, 1.0),
+    ];
+    assert_eq!(
+        map_color_value(&values, 0.5, 1.0).unwrap(),
+        (0.5, 0.5, 0.5, 1.0)
+    );
+    assert_eq!(
+        map_color_value(&values, 0.2, 1.0).unwrap(),
+        (0.8, 0.8, 0.8, 1.0)
+    );
+}
+
 // Find the linearly interpolated location from 'start_location' to 'end_location'
 // given the 'locations' values and the ratio 'elapsed' / 'period'
 pub fn map_location(
@@ -142,7 +158,7 @@ pub fn check_decay(decay: f32) -> Result<(), String> {
 // check that the locations interpolation values are valid
 pub fn check_locations(locations: &[f32]) -> Result<(), String> {
     if locations.is_empty() {
-        return Err(String::from("empty vec: location Vec cannot be empty"));
+        return Err(String::from("empty: argument 'locations' cannot be empty"));
     }
     for l in locations.iter() {
         if *l > 1. || *l < 0. {
@@ -158,7 +174,7 @@ pub fn check_locations(locations: &[f32]) -> Result<(), String> {
 // check that the density chance values are valid
 pub fn check_densities(densities: &[f32]) -> Result<(), String> {
     if densities.is_empty() {
-        return Err(String::from("empty vec: densities Vec cannot be empty"));
+        return Err(String::from("empty: argument 'densities' cannot be empty"));
     }
     for d in densities.iter() {
         if *d > 1. || *d < 0. {
@@ -174,7 +190,7 @@ pub fn check_densities(densities: &[f32]) -> Result<(), String> {
 // check that the color interpolations are valid
 pub fn check_colors(colors: &[Color]) -> Result<(), String> {
     if colors.is_empty() {
-        return Err(String::from("empty vec: color Vec cannot be empty"));
+        return Err(String::from("empty: argument 'colors' cannot be empty"));
     }
     Ok(())
 }

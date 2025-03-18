@@ -1,22 +1,22 @@
-//! # TDPL Example
+//! # LinearPL Example
 //!
 //! Crate for creating particle systems alongside
 //! the macroquad crate.
 
 use macroquad::prelude::*;
 
-use tdpl::groups::{SeqGrp, SyncGrp};
-use tdpl::linear_particles::LinearParticles;
-use tdpl::particle::Particle;
-use tdpl::particle_sys::ParticleSys;
+use linearpl::groups::{SeqGrp, SyncGrp};
+use linearpl::linear_particles::LinearParticles;
+use linearpl::particle::Particle;
+use linearpl::particle_sys::ParticleSys;
 
 const CAM_SPEED: f32 = 0.8;
 
-#[macroquad::main("tdpl example")]
+#[macroquad::main("LinearPL Example")]
 async fn main() -> Result<(), String> {
     let up = vec3(0., 1., 0.);
 
-    let mut hrot: f32 = 1.18;
+    let mut hrot: f32 = 1.57;
     let mut vrot: f32 = 0.;
 
     let u_pos = vec3(0., 1., 0.);
@@ -33,9 +33,9 @@ async fn main() -> Result<(), String> {
     // **********************************
 
     // some static particles
-    let mut static_part1 = Particle::new((-0.2, 1., 4.), (0., 1., 1., 1.), 0.005, 1., false);
-    let mut static_part2 = Particle::new((0., 1., 4.), (0., 1., 0., 1.), 0.005, 1., false);
-    let mut static_part3 = Particle::new((0.2, 1., 4.), (1., 0., 0., 1.), 0.005, 1., false);
+    let mut static_part1 = Particle::new((-1.5, 1.2, 4.), (0., 1., 1., 1.), 0.005, 1., false)?;
+    let mut static_part2 = Particle::new((-1.5, 1., 4.), (0., 1., 0., 1.), 0.005, 1., false)?;
+    let mut static_part3 = Particle::new((-1.5, 0.8, 4.), (1., 0., 0., 1.), 0.005, 1., false)?;
 
     // some linear particle systems
     let lin_part_h: LinearParticles =
@@ -174,10 +174,10 @@ async fn main() -> Result<(), String> {
 
         set_default_camera();
         draw_text(
-            "\\(^O^)/ TDPL",
+            "\\(^O^)/ LinearPL",
             screen_width() - 200.0,
             screen_height() - 30.,
-            30.,
+            20.,
             WHITE,
         );
 

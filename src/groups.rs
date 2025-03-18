@@ -16,7 +16,7 @@ use crate::util::check_period;
 /// that are synchronously ran together with a
 /// shared period and clock.
 pub struct SyncGrp<P: ParticleSys> {
-    pub period: f32,
+    period: f32,
     parts: Vec<P>,
     start_time: Instant,
     active: bool,
@@ -140,7 +140,7 @@ impl<P: ParticleSys + std::clone::Clone> Default for SyncGrp<P> {
 /// `period` value divided by the number of ParticleSys's in
 /// `parts`.
 pub struct SeqGrp<P: ParticleSys> {
-    pub period: f32,
+    period: f32,
     parts: Vec<P>,
     start_time: Instant,
     active: bool,

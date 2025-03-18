@@ -48,17 +48,18 @@ impl Particle {
         size: f32,
         length: f32,
         sloped: bool,
-    ) -> Self {
+    ) -> Result<Self, String> {
         let l = Vec3::new(x, y, z);
         let el = l + Vec3::splat(size);
-        Particle {
+        check_period(length)?;
+        Ok(Particle {
             location: l,
             end_location: el,
             color: Color::new(r, g, b, a),
             length,
             sloped,
             start_time: Instant::now(),
-        }
+        })
     }
 
     /// Instantiate a new Particle at `(x, y, z)` location
@@ -71,15 +72,16 @@ impl Particle {
         (r, g, b, a): (f32, f32, f32, f32),
         length: f32,
         sloped: bool,
-    ) -> Self {
-        Particle {
+    ) -> Result<Self, String> {
+        check_period(length)?;
+        Ok(Particle {
             location: Vec3::new(x, y, z),
             end_location: Vec3::new(xe, ye, ze),
             color: Color::new(r, g, b, a),
             length,
             sloped,
             start_time: Instant::now(),
-        }
+        })
     }
 
     /// Add the `x`, `y`, `z` argument values to the location of Particle.
@@ -183,6 +185,6 @@ impl ParticleSys for Particle {
 
 impl Default for Particle {
     fn default() -> Self {
-        Particle::new((0., 0., 0.), (0., 0., 0., 1.), 0.01, 1., false)
+        Particle::new((0., 0., 0.), (0., 0., 0., 1.), 0.01, 1., false).unwrap()
     }
 }
