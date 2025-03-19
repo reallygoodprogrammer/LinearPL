@@ -15,6 +15,7 @@ use crate::util::check_period;
 /// Group of objects implementing ParticleSys
 /// that are synchronously ran together with a
 /// shared period and clock.
+#[derive(Debug, Clone)]
 pub struct SyncGrp<P: ParticleSys> {
     period: f32,
     parts: Vec<P>,
@@ -139,6 +140,7 @@ impl<P: ParticleSys + std::clone::Clone> Default for SyncGrp<P> {
 /// the member `parts`, each with period equal to the SeqGrp's
 /// `period` value divided by the number of ParticleSys's in
 /// `parts`.
+#[derive(Debug, Clone)]
 pub struct SeqGrp<P: ParticleSys> {
     period: f32,
     parts: Vec<P>,
@@ -254,7 +256,6 @@ where
         ))?;
 
         if !p.next_frame(current_time)? {
-            p.tear_down();
             self.current_part += 1;
             self.time_offset += self.part_period;
             if self.current_part == self.parts.len() {
@@ -269,13 +270,12 @@ where
                     }
                 }
             }
-            self.parts
-                .get_mut(self.current_part)
-                .ok_or(format!(
-                    "indexing out of bounds for SeqGrp part in next_frame-setup: {}",
-                    self.current_part
-                ))?
-                .setup(self.looping, Some(self.part_period))?;
+            let p = self.parts.get_mut(self.current_part).ok_or(format!(
+                "indexing out of bounds for SeqGrp part in next_frame-setup: {}",
+                self.current_part
+            ))?;
+            p.tear_down();
+            p.setup(self.looping, Some(self.part_period))?;
         }
 
         Ok(true)

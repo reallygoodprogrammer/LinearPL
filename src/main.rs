@@ -17,7 +17,7 @@ async fn main() -> Result<(), String> {
     let up = vec3(0., 1., 0.);
 
     let mut hrot: f32 = 1.57;
-    let mut vrot: f32 = 0.;
+    let mut vrot: f32 = 0.2;
 
     let u_pos = vec3(0., 1., 0.);
 
@@ -31,15 +31,17 @@ async fn main() -> Result<(), String> {
     // **********************************
     // LIBRARY SETUP EXAMPLES START HERE!
     // **********************************
+    
+    let offset = 1.5;
 
     // some static particles
-    let mut static_part1 = Particle::new((-1.5, 1.2, 4.), (0., 1., 1., 1.), 0.005, 1., false)?;
-    let mut static_part2 = Particle::new((-1.5, 1., 4.), (0., 1., 0., 1.), 0.005, 1., false)?;
-    let mut static_part3 = Particle::new((-1.5, 0.8, 4.), (1., 0., 0., 1.), 0.005, 1., false)?;
+    let mut static_part1 = Particle::new((-1.5, 1.2 + offset, 4.), (0., 1., 1., 1.), 0.005, 1., false)?;
+    let mut static_part2 = Particle::new((-1.5, 1. + offset, 4.), (0., 1., 0., 1.), 0.005, 1., false)?;
+    let mut static_part3 = Particle::new((-1.5, 0.8 + offset, 4.), (1., 0., 0., 1.), 0.005, 1., false)?;
 
     // some linear particle systems
     let lin_part_h: LinearParticles =
-        LinearParticles::new((-1., 0., 3.).into(), (1., 0., 3.).into())
+        LinearParticles::new((-1., offset, 3.).into(), (1., offset, 3.).into())
             .with_decay(1.4)?
             .with_locations(&[0., 0., 1., 1.])?
             .with_colors(&[
@@ -51,55 +53,84 @@ async fn main() -> Result<(), String> {
                 Color::new(0., 0., 1., 0.),
             ])?;
     let lin_part_v: LinearParticles =
-        LinearParticles::new((-1., 0., 3.).into(), (-1., 2., 3.).into())
+        LinearParticles::new((-1., offset, 3.).into(), (-1., 2. + offset, 3.).into())
             .with_decay(2.0)?
             .with_locations(&[1., 0., 1.])?
             .with_colors(&[PINK, PURPLE, RED, VIOLET])?;
     let mut linear_grp = SyncGrp::new(
         3.,
         &[
-            lin_part_h.clone_with_start_end(vec3(1., 0., 5.), vec3(-1., 0., 5.))?,
-            lin_part_h.clone_with_start_end(vec3(-1., 2., 3.), vec3(1., 2., 3.))?,
-            lin_part_h.clone_with_start_end(vec3(1., 2., 5.), vec3(-1., 2., 5.))?,
-            lin_part_h.clone_with_start_end(vec3(-1., 0., 5.), vec3(-1., 0., 3.))?,
-            lin_part_h.clone_with_start_end(vec3(1., 0., 3.), vec3(1., 0., 5.))?,
-            lin_part_h.clone_with_start_end(vec3(-1., 2., 5.), vec3(-1., 2., 3.))?,
-            lin_part_h.clone_with_start_end(vec3(1., 2., 3.), vec3(1., 2., 5.))?,
+            lin_part_h.clone_with_start_end(vec3(1., offset, 5.), vec3(-1., offset, 5.))?,
+            lin_part_h.clone_with_start_end(vec3(-1., 2. + offset, 3.), vec3(1., 2. + offset, 3.))?,
+            lin_part_h.clone_with_start_end(vec3(1., 2. + offset, 5.), vec3(-1., 2. + offset, 5.))?,
+            lin_part_h.clone_with_start_end(vec3(-1., offset, 5.), vec3(-1., offset, 3.))?,
+            lin_part_h.clone_with_start_end(vec3(1., offset, 3.), vec3(1., offset, 5.))?,
+            lin_part_h.clone_with_start_end(vec3(-1., 2. + offset, 5.), vec3(-1., 2. + offset, 3.))?,
+            lin_part_h.clone_with_start_end(vec3(1., 2. + offset, 3.), vec3(1., 2. + offset, 5.))?,
             lin_part_h,
-            lin_part_v.clone_with_start_end(vec3(1., 0., 3.), vec3(1., 2., 3.))?,
-            lin_part_v.clone_with_start_end(vec3(1., 0., 5.), vec3(1., 2., 5.))?,
-            lin_part_v.clone_with_start_end(vec3(-1., 0., 5.), vec3(-1., 2., 5.))?,
+            lin_part_v.clone_with_start_end(vec3(1., offset, 3.), vec3(1., 2. + offset, 3.))?,
+            lin_part_v.clone_with_start_end(vec3(1., offset, 5.), vec3(1., 2. + offset, 5.))?,
+            lin_part_v.clone_with_start_end(vec3(-1., offset, 5.), vec3(-1., 2. + offset, 5.))?,
             lin_part_v,
         ],
     );
 
-    let lil_lin_part = LinearParticles::new((-0.75, 0.25, 3.25).into(), (-0.75, 1.75, 3.25).into())
-        .with_decay(0.35)?
+    let lil_lin_part = LinearParticles::new((-0.75, 0.25 + offset, 3.25).into(), (-0.75, 1.75 + offset, 3.25).into())
+        .with_decay(0.2)?
+        .with_densities(&[0.25])?
         .with_locations(&[1., 1., 0.5, 0., 0.])?
         .with_colors(&[SKYBLUE, GREEN])?;
 
     let mut linear_seq = SeqGrp::new(
-        7.,
+        4.,
         &[
             lil_lin_part
                 .clone_with_colors(&[GREEN, SKYBLUE])?
-                .with_start_end((-0.75, 1.75, 3.25).into(), (0.75, 0.25, 4.75).into())?,
+                .with_start_end((-0.75, 1.75 + offset, 3.25).into(), (0.75, 0.25 + offset, 4.75).into())?,
             lil_lin_part
-                .clone_with_start_end((0.75, 0.25, 4.75).into(), (0.75, 1.75, 4.75).into())?,
-            lil_lin_part
-                .clone_with_colors(&[GREEN, SKYBLUE])?
-                .with_start_end((0.75, 1.75, 4.75).into(), (0.75, 0.25, 3.25).into())?,
-            lil_lin_part
-                .clone_with_start_end((0.75, 0.25, 3.25).into(), (0.75, 1.75, 3.25).into())?,
+                .clone_with_start_end((0.75, 0.25 + offset, 4.75).into(), (0.75, 1.75 + offset, 4.75).into())?,
             lil_lin_part
                 .clone_with_colors(&[GREEN, SKYBLUE])?
-                .with_start_end((0.75, 1.75, 3.25).into(), (-0.75, 0.25, 4.75).into())?,
+                .with_start_end((0.75, 1.75 + offset, 4.75).into(), (0.75, 0.25 + offset, 3.25).into())?,
             lil_lin_part
-                .clone_with_start_end((-0.75, 0.25, 4.75).into(), (-0.75, 1.75, 4.75).into())?,
+                .clone_with_start_end((0.75, 0.25 + offset, 3.25).into(), (0.75, 1.75 + offset, 3.25).into())?,
             lil_lin_part
                 .clone_with_colors(&[GREEN, SKYBLUE])?
-                .with_start_end((-0.75, 1.75, 4.75).into(), (-0.75, 0.25, 3.25).into())?,
+                .with_start_end((0.75, 1.75 + offset, 3.25).into(), (-0.75, 0.25 + offset, 4.75).into())?,
+            lil_lin_part
+                .clone_with_start_end((-0.75, 0.25 + offset, 4.75).into(), (-0.75, 1.75 + offset, 4.75).into())?,
+            lil_lin_part
+                .clone_with_colors(&[GREEN, SKYBLUE])?
+                .with_start_end((-0.75, 1.75 + offset, 4.75).into(), (-0.75, 0.25 + offset, 3.25).into())?,
             lil_lin_part,
+        ],
+    );
+
+    let base_grid_line = LinearParticles::default()
+        .with_decay(0.8)?
+        .with_locations(&[0., 1., 0.])?
+        .with_colors(&[RED, VIOLET, BLUE, SKYBLUE])?;
+
+    let mut grid_lines_z: Vec<LinearParticles> = Vec::new();
+    let mut grid_lines_x: Vec<LinearParticles> = Vec::new();
+    let size = 15.;
+    let res = 0.5;
+
+    for i in (-(size as i32) + 1)..(size as i32) {
+        grid_lines_z.push(base_grid_line.clone_with_start_end(
+            (i as f32 * res, 0., size).into(),
+            (i as f32 * res, 0., -size).into(),
+        )?);
+        grid_lines_x.push(base_grid_line.clone_with_start_end(
+            (size, 0., i as f32 * res).into(),
+            (-size, 0., i as f32 * res).into(),
+        )?);
+    }
+    let mut grid = SyncGrp::new(
+        8.,
+        &[
+            SyncGrp::new(8., &grid_lines_z),
+            SyncGrp::new(8., &grid_lines_x),
         ],
     );
 
@@ -108,7 +139,11 @@ async fn main() -> Result<(), String> {
     };
 
     if let Err(v) = linear_seq.start_loop() {
-        eprintln!("linear_grp received error at startup: {:?}", v);
+        eprintln!("linear_seq received error at startup: {:?}", v);
+    };
+
+    if let Err(v) = grid.start_loop() {
+        eprintln!("grid received error at startup: {:?}", v);
     };
 
     // **********************************
@@ -163,20 +198,44 @@ async fn main() -> Result<(), String> {
         linear_grp.run()?;
         linear_seq.run()?;
 
+        draw_line_3d(
+            vec3(-size, 0., -size),
+            vec3(size, 0., -size),
+            WHITE,
+        );
+        draw_line_3d(
+            vec3(size, 0., -size),
+            vec3(size, 0., size),
+            WHITE,
+        );
+        draw_line_3d(
+            vec3(size, 0., size),
+            vec3(-size, 0., size),
+            WHITE,
+        );
+        draw_line_3d(
+            vec3(-size, 0., size),
+            vec3(-size, 0., -size),
+            WHITE,
+        );
+        grid.run()?;
+
         // **********************************
         // END HERE
         // **********************************
-
-        draw_cube_wires(vec3(-4., 1., 0.), vec3(2., 2., 2.), GREEN);
-        draw_cube_wires(vec3(4., 1., 0.), vec3(2., 2., 2.), RED);
-        draw_cube_wires(vec3(0., 4., 0.), vec3(2., 2., 2.), YELLOW);
-        draw_cube_wires(vec3(0., 1., -4.), vec3(2., 2., 2.), ORANGE);
 
         set_default_camera();
         draw_text(
             "\\(^O^)/ LinearPL",
             screen_width() - 200.0,
             screen_height() - 30.,
+            20.,
+            WHITE,
+        );
+        draw_text(
+            "drag mouse to look around",
+            screen_width() - 230.0,
+            screen_height() - 10.,
             20.,
             WHITE,
         );

@@ -200,32 +200,34 @@ impl ParticleSys for LinearParticles {
             None => self.start_time.elapsed().as_secs_f32(),
         };
 
-        let gen_flag = map_float_value(&self.densities, current_time, self.period)?;
-        if self.should_generate(gen_flag) {
-            let nft = 4.0 / get_fps() as f32;
-            let p = Particle::new_line(
-                map_location(
-                    &self.locations,
-                    self.start_location,
-                    self.end_location,
-                    current_time,
-                    self.period,
-                )?,
-                map_location(
-                    &self.locations,
-                    self.start_location,
-                    self.end_location,
-                    current_time + nft,
-                    self.period,
-                )?,
-                map_color_value(&self.colors, current_time, self.period)?,
-                self.decay,
-                true,
-            )?;
-            self.particles.push(p);
+        if current_time <= self.period {
+            let gen_flag = map_float_value(&self.densities, current_time, self.period)?;
+            if self.should_generate(gen_flag) {
+                let nft = 4.0 / get_fps() as f32;
+                let p = Particle::new_line(
+                    map_location(
+                        &self.locations,
+                        self.start_location,
+                        self.end_location,
+                        current_time,
+                        self.period,
+                    )?,
+                    map_location(
+                        &self.locations,
+                        self.start_location,
+                        self.end_location,
+                        current_time + nft,
+                        self.period,
+                    )?,
+                    map_color_value(&self.colors, current_time, self.period)?,
+                    self.decay,
+                    true,
+                )?;
+                self.particles.push(p);
+            }
         }
-        self.particles.retain_mut(|p| !(*p).draw());
 
+        self.particles.retain_mut(|p| !(*p).draw());
         Ok(self.start_time.elapsed().as_secs_f32() <= self.period)
     }
 
@@ -349,7 +351,7 @@ impl ParticleSys for LinearGrp {
             ps.next_frame(current_time)?;
         }
 
-        Ok(self.start_time.elapsed().as_secs_f32() <= self.period)
+        Ok(current_time <= Some(self.period))
     }
 
     fn iter(&self) -> Option<Iter<'_, Self::T>> {

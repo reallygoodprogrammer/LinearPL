@@ -14,8 +14,9 @@
 //! with `start()`.
 //!
 //! While there are a lot of methods that are required to be implemented,
-//! implementing this trait allows for a struct to reside in Systems of
-//! Particle Systems allowing for more complex animations and patterns.
+//! implementing this trait allows for a struct to reside in Groups of
+//! Particle Systems allowing for more complex animations and patterns
+//! to be used with the traits api.
 
 use std::slice::{Iter, IterMut};
 
@@ -76,6 +77,9 @@ pub trait ParticleSys {
     ///
     /// Note: looping mechanisms are handled by the traits `display`
     /// implementation and should not be implemented in this method.
+    ///
+    /// For these to work, it is best to return Ok(false) when you would
+    /// like for the loop to reset, not for when to stop displaying particles.
     fn next_frame(&mut self, time: Option<f32>) -> Result<bool, String>;
 
     /// Return an Iterator over the Particle Pieces managed by the
@@ -93,11 +97,13 @@ pub trait ParticleSys {
 
     /// Set up ParticleSys into its looping active state.
     fn start_loop(&mut self) -> Result<(), String> {
+        self.tear_down();
         self.setup(true, None)
     }
 
     /// Set up ParticleSys into its active state.
     fn start(&mut self) -> Result<(), String> {
+        self.tear_down();
         self.setup(false, None)
     }
 
@@ -121,8 +127,6 @@ pub trait ParticleSys {
         if !self.next_frame(elapsed)? {
             if self.is_looping() {
                 self.reset_time();
-            } else {
-                self.tear_down();
             }
             Ok(false)
         } else {
