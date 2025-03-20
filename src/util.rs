@@ -147,12 +147,32 @@ pub fn check_period(period: f32) -> Result<(), String> {
     }
 }
 
+#[test]
+fn test_check_period() {
+    assert_eq!(
+        check_period(-0.5),
+        Err(String::from(
+            "value error: -0.5 period should be positive value"
+        ))
+    );
+}
+
 // check that the decay of LinearParticles is valid
 pub fn check_decay(decay: f32) -> Result<(), String> {
     match decay {
         d if d >= 0. => Ok(()),
         d => Err(format!("value error: {} decay should be positive value", d)),
     }
+}
+
+#[test]
+fn test_check_decay() {
+    assert_eq!(
+        check_decay(-0.5),
+        Err(String::from(
+            "value error: -0.5 decay should be positive value"
+        ))
+    );
 }
 
 // check that the locations interpolation values are valid
@@ -171,6 +191,20 @@ pub fn check_locations(locations: &[f32]) -> Result<(), String> {
     Ok(())
 }
 
+#[test]
+fn test_check_locations() {
+    assert_eq!(
+        check_locations(&Vec::new()),
+        Err(String::from("empty: argument 'locations' cannot be empty"))
+    );
+    assert_eq!(
+        check_locations(&vec!(2.)),
+        Err(String::from(
+            "value error: 2 location interpolation should be between 0 and 1 inclusive"
+        ))
+    );
+}
+
 // check that the density chance values are valid
 pub fn check_densities(densities: &[f32]) -> Result<(), String> {
     if densities.is_empty() {
@@ -187,10 +221,32 @@ pub fn check_densities(densities: &[f32]) -> Result<(), String> {
     Ok(())
 }
 
+#[test]
+fn test_check_densities() {
+    assert_eq!(
+        check_densities(&Vec::new()),
+        Err(String::from("empty: argument 'densities' cannot be empty"))
+    );
+    assert_eq!(
+        check_densities(&vec!(2.)),
+        Err(String::from(
+            "value error: 2 density value should be between 0 and 1 inclusive"
+        ))
+    );
+}
+
 // check that the color interpolations are valid
 pub fn check_colors(colors: &[Color]) -> Result<(), String> {
     if colors.is_empty() {
         return Err(String::from("empty: argument 'colors' cannot be empty"));
     }
     Ok(())
+}
+
+#[test]
+fn test_check_colors() {
+    assert_eq!(
+        check_colors(&Vec::new()),
+        Err(String::from("empty: argument 'colors' cannot be empty"))
+    );
 }

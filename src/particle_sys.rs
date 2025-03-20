@@ -1,7 +1,7 @@
 //! # ParticleSys Trait
 //!
 //! Contains the trait definition for ParticleSys, a system
-//! of particles. This is the bread and butter of `tdpl` as it
+//! of particles. This is the bread and butter of LinearPL as it
 //! acts as the main api for interacting with the libraries different
 //! forms of particle systems.
 //!
@@ -21,7 +21,7 @@
 use std::slice::{Iter, IterMut};
 
 /// Defines how to interact with a system of particles within
-/// the `tdpl` library.
+/// the LinearPL library.
 pub trait ParticleSys {
     type T: ParticleSys;
 

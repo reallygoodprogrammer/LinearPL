@@ -3,7 +3,7 @@
 //! Particle system generated along a single straight line.
 //!
 //! Typically, the main functionality besides defining the parameters
-//! of these Particle Systems is held within the `tdpl::particle_sys::ParticleSys`
+//! of these Particle Systems is held within the `linearpl::particle_sys::ParticleSys`
 //! trait. It's recommended to look at the documentation for `ParticleSys`
 //! before using this module.
 
@@ -257,7 +257,7 @@ impl Default for LinearParticles {
 // ***************************************
 
 /// Group of LinearParticles objects with a synced period and
-/// start time. This is similar to `tdpl::groups::SyncGrp` but
+/// start time. This is similar to `linearpl::groups::SyncGrp` but
 /// only allowed to contain LinearParticles objects.
 #[derive(Debug, Clone)]
 pub struct LinearGrp {

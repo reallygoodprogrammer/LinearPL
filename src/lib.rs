@@ -7,6 +7,9 @@
 //!
 //! # Usage
 //!
+//! An example of how to use this library is given in `src/main.rs`, I'd recommend
+//! looking at that after reading the doc overview.
+//!
 //! Here is how LinearPL is currently intended to be used:
 //!
 //! ### ParticleSys
@@ -18,7 +21,7 @@
 //! * `run()` displays particles with respect to the amount of elapsed time from "starting"
 //! * `stop()` stops the particle system before termination in `run()` or while looping
 //!
-//! Along with these methods, all implementations of `ParticleSys` in the library implement
+//! Along with these methods, all implementations of `ParticleSys` in this library implement
 //! particle systems that span a set `period` held by the object, which is the number of seconds
 //! the particle system should run.
 //!
