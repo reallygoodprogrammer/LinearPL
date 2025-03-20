@@ -2,6 +2,10 @@
 //!
 //! Crate for creating particle systems alongside
 //! the macroquad crate.
+//!
+//! This examples camera mouse-drag was modified from the
+//! macroquad first-person example found
+//! [here](https://github.com/not-fl3/macroquad/blob/master/examples/first_person.rs)
 
 use macroquad::prelude::*;
 
