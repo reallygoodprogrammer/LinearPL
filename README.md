@@ -10,7 +10,7 @@ Fairly straight-forward *Linear Particle Library* for use with
 
 # Usage
 
-An example of how to use this library is given in [main.rs](src/main), I'd recommend
+An example of how to use this library is given in [main.rs](src/main.rs), I'd recommend
 looking at that after reading the doc overview.
 
 Here is how LinearPL is currently intended to be used:
