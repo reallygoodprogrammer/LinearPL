@@ -1,6 +1,6 @@
 # LinearPL
 
-Fairly basuc *Linear Particle Library* for use with
+Fairly basic *Linear Particle Library* for use with
 [macroquad](https://github.com/not-fl3/macroquad) in rust.
 
 ---
