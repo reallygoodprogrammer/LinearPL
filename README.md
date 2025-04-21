@@ -2,8 +2,7 @@
 
 Fairly basic *Linear Particle Library* for use with
 [macroquad](https://github.com/not-fl3/macroquad) in rust. This was a school
-project that never got "completed" to a level I would put on crates.io, it
-lives here waiting to be finalized...
+project that I would like to 'finalize' before submitting to crates.io.
 
 ---
 
