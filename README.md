@@ -1,9 +1,9 @@
 # linearpl
 
-Linear particle library for [macroquad](https://github.com/not-fl3/macroquad).
-
 <a href="https://github.com/reallygoodprogrammer/linearpl/blob/main/LICENSE.txt"><img alt="Crates.io License" src="https://img.shields.io/crates/l/linearpl"></a>
 <a href="https://crates.io/crates/linearpl"><img alt="Crates.io Version" src="https://img.shields.io/crates/v/linearpl"></a>
+
+Linear particle library for [macroquad](https://github.com/not-fl3/macroquad).
 
 ---
 
