@@ -7,6 +7,10 @@ Linear particle library for [macroquad](https://github.com/not-fl3/macroquad).
 
 ---
 
+# Install
+
+To add the library to your own crate, run `cargo add linearpl`.
+
 # Usage
 
 An example of how to use this library is given in [main.rs](src/main.rs), I'd recommend
