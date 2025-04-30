@@ -1,17 +1,48 @@
-# LinearPL
+# linearpl
 
-Fairly basic *Linear Particle Library* for use with
-[macroquad](https://github.com/not-fl3/macroquad) in rust. This was a school
-project that I would like to 'finalize' before submitting to crates.io.
+Linear particle library for [macroquad](https://github.com/not-fl3/macroquad).
+
+<a href="https://github.com/reallygoodprogrammer/linearpl/blob/main/LICENSE.txt"><img alt="Crates.io License" src="https://img.shields.io/crates/l/linearpl"></a>
+<a href="https://crates.io/crates/linearpl"><img alt="Crates.io Version" src="https://img.shields.io/crates/v/linearpl"></a>
 
 ---
 
 # Usage
 
 An example of how to use this library is given in [main.rs](src/main.rs), I'd recommend
-looking at that after reading the doc overview.
+looking at that after for a more detailed example that puts everything together.
 
-Here is how LinearPL is currently intended to be used:
+## Examples
+
+A linear particle instance starting at (0, 0, 0) and ending at (1, 1, 1):
+
+```rust
+use macroquad::prelude::*;
+use linearpl::linear_particles::LinearParticles;
+
+...
+
+let start = Vec3::new(0.0, 0.0, 0.0);
+let end = Vec3::new(1.0, 1.0, 1.0);
+let mut linear_instance = LinearParticles::new(start, end)
+    .with_decay(1.4)?
+    .with_locations(&[0.0, 1.0])?
+    .with_colors(&[RED, BLUE])?;
+
+if let Err(v) == linear_instance.start_loop() {
+    eprintln!("received error: {:?}", v);
+}
+
+loop {
+    ...
+    linear_instance.run()?;
+    ...
+}
+```
+
+---
+
+# Parts
 
 ### ParticleSys
 
@@ -48,6 +79,6 @@ graphics from the particle system implementation in the library. These objects h
 type of `ParticleSys` implementation, including other SyncGrp and SeqGrp objects.
 
 
-### Licensing
+# Licensing
 
 MIT License included [here](LICENSE.txt).

@@ -1,11 +1,11 @@
 [package]
 name = "linearpl"
+authors = ["Miles Dustin <milesdustin45@gmail.com>"]
 version = "0.1.0"
 edition = "2021"
-description = """
-	particle system library for use with macroquad
-"""
+description = "particle system library for macroquad"
 readme = "README.md"
+license = "MIT"
 
 [dependencies]
 macroquad = "0.4.13"
