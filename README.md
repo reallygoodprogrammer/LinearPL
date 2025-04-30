@@ -11,6 +11,8 @@ Linear particle library for [macroquad](https://github.com/not-fl3/macroquad).
 
 To add the library to your own crate, run `cargo add linearpl`.
 
+---
+
 # Usage
 
 An example of how to use this library is given in [main.rs](src/main.rs), I'd recommend
@@ -82,6 +84,7 @@ using a single clock, making it easier for the user to create more complex and i
 graphics from the particle system implementation in the library. These objects hold any
 type of `ParticleSys` implementation, including other SyncGrp and SeqGrp objects.
 
+---
 
 # Licensing
 
